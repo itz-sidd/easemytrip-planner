@@ -8,48 +8,48 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 210 15% 15%;
+    --background: 240 15% 95%;
+    --foreground: 240 15% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 15% 15%;
+    --card-foreground: 240 15% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 15% 15%;
+    --popover-foreground: 240 15% 10%;
 
-    /* Classic color palette */
-    --primary: 210 100% 40%;
+    /* Dark chat interface colors */
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 210 100% 45%;
+    --primary-light: 217 91% 70%;
 
-    --secondary: 210 15% 96%;
-    --secondary-foreground: 210 15% 15%;
+    --secondary: 240 15% 15%;
+    --secondary-foreground: 240 15% 90%;
 
-    --muted: 210 15% 96%;
-    --muted-foreground: 210 15% 45%;
+    --muted: 240 15% 20%;
+    --muted-foreground: 240 15% 60%;
 
-    --accent: 25 100% 50%;
+    --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 15% 90%;
-    --input: 210 15% 90%;
-    --ring: 210 100% 40%;
+    --border: 240 15% 25%;
+    --input: 240 15% 20%;
+    --ring: 217 91% 60%;
 
-    --radius: 0.375rem;
+    --radius: 0.5rem;
 
-    /* Classic navy and gold theme */
-    --navy: 210 100% 25%;
-    --navy-light: 210 100% 35%;
-    --gold: 45 100% 50%;
-    --cream: 45 25% 95%;
+    /* Chat interface specific colors */
+    --chat-bg: 240 15% 8%;
+    --chat-sidebar: 240 15% 10%;
+    --chat-card: 240 15% 12%;
+    --chat-text: 240 15% 85%;
+    --chat-text-muted: 240 15% 55%;
     
-    /* Subtle shadows for classic design */
-    --shadow-subtle: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    --shadow-classic: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-elevated: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    /* Interactive elements */
+    --chat-hover: 240 15% 18%;
+    --chat-border: 240 15% 20%;
 
     --sidebar-background: 0 0% 98%;
 
@@ -69,42 +69,43 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 210 15% 8%;
-    --foreground: 0 0% 95%;
+    --background: 240 15% 8%;
+    --foreground: 240 15% 90%;
 
-    --card: 210 15% 10%;
-    --card-foreground: 0 0% 95%;
+    --card: 240 15% 12%;
+    --card-foreground: 240 15% 90%;
 
-    --popover: 210 15% 10%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 240 15% 12%;
+    --popover-foreground: 240 15% 90%;
 
-    --primary: 210 100% 55%;
-    --primary-foreground: 210 15% 8%;
-    --primary-light: 210 100% 60%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 217 91% 70%;
 
-    --secondary: 210 15% 15%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 240 15% 15%;
+    --secondary-foreground: 240 15% 90%;
 
-    --muted: 210 15% 15%;
-    --muted-foreground: 210 15% 65%;
+    --muted: 240 15% 20%;
+    --muted-foreground: 240 15% 60%;
 
-    --accent: 25 100% 55%;
-    --accent-foreground: 210 15% 8%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 60%;
     --destructive-foreground: 0 0% 95%;
 
-    --border: 210 15% 20%;
-    --input: 210 15% 20%;
-    --ring: 210 100% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --border: 240 15% 20%;
+    --input: 240 15% 20%;
+    --ring: 217 91% 60%;
+    
+    --sidebar-background: 240 15% 10%;
+    --sidebar-foreground: 240 15% 90%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 240 15% 15%;
+    --sidebar-accent-foreground: 240 15% 90%;
+    --sidebar-border: 240 15% 20%;
+    --sidebar-ring: 217 91% 60%;
   }
 }
 
