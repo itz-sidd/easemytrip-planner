@@ -1,9 +1,9 @@
-import { MainLayout } from "@/components/MainLayout";
+import { ChatDashboard } from "@/components/ChatDashboard";
 
 const Index = () => {
   return (
     <div className="dark">
-      <MainLayout />
+      <ChatDashboard />
     </div>
   );
 };
