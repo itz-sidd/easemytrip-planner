@@ -172,18 +172,22 @@ const ChatInterface = () => {
               </div>
 
               {/* Feature Cards */}
-              <div className="grid md:grid-cols-3 gap-4 mb-6 w-full max-w-4xl">
+              <div className="flex flex-wrap justify-center gap-8 mb-6 w-full max-w-4xl">
                 {featureCards.map((feature, index) => {
                   const Icon = feature.icon;
                   return (
                     <div 
                       key={feature.title}
-                      className="bg-chat-card border border-chat-border rounded-lg p-4 hover:bg-chat-hover transition-all duration-300 cursor-pointer group animate-scale-in hover:scale-105"
+                      className="flex items-center gap-4 p-4 rounded-full bg-chat-card/30 hover:bg-chat-card/50 transition-all duration-300 cursor-pointer group animate-scale-in border border-chat-border/30 hover:border-primary/30"
                       style={{ animationDelay: `${index * 0.1 + 0.3}s` }}
                     >
-                      <Icon className="h-6 w-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
-                      <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors text-sm">{feature.title}</h3>
-                      <p className="text-xs text-chat-text-muted">{feature.description}</p>
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+                        <Icon className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-medium text-chat-text text-sm mb-1 group-hover:text-primary transition-colors">{feature.title}</h3>
+                        <p className="text-xs text-chat-text-muted max-w-48">{feature.description}</p>
+                      </div>
                     </div>
                   );
                 })}
