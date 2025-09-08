@@ -57,7 +57,7 @@ const ChatInterface = () => {
   ];
 
   return (
-    <div className="h-screen bg-chat-bg text-chat-text flex overflow-hidden">
+    <div className="h-screen bg-chat-bg text-chat-text flex overflow-hidden max-h-screen">
       {/* Sidebar */}
       <div className="w-80 bg-chat-sidebar border-r border-chat-border flex flex-col animate-slide-in-left">
         {/* Header */}
@@ -149,30 +149,30 @@ const ChatInterface = () => {
         </div>
 
         {/* Welcome Area */}
-        <div className="flex-1 flex flex-col justify-center items-center p-8 animate-fade-in">
-          <div className="max-w-2xl text-center mb-8">
+        <div className="flex-1 flex flex-col justify-center items-center p-4 animate-fade-in overflow-y-auto">
+          <div className="max-w-2xl text-center mb-6">
             <h1 className="text-4xl font-bold mb-4 animate-scale-in text-chat-text">
               How can I help you today?
             </h1>
-            <p className="text-chat-text-muted text-base mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <p className="text-chat-text-muted text-base mb-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
               This code will display a prompt asking the user for their name, and then it will
               display a greeting message with the name entered by the user.
             </p>
           </div>
 
           {/* Feature Cards */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8 w-full max-w-4xl">
+          <div className="grid md:grid-cols-3 gap-4 mb-6 w-full max-w-4xl">
             {featureCards.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <div 
                   key={feature.title}
-                  className="bg-chat-card border border-chat-border rounded-lg p-6 hover:bg-chat-hover transition-all duration-300 cursor-pointer group animate-scale-in hover:scale-105"
+                  className="bg-chat-card border border-chat-border rounded-lg p-4 hover:bg-chat-hover transition-all duration-300 cursor-pointer group animate-scale-in hover:scale-105"
                   style={{ animationDelay: `${index * 0.1 + 0.3}s` }}
                 >
-                  <Icon className="h-8 w-8 text-primary mb-4 group-hover:scale-110 transition-transform" />
-                  <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">{feature.title}</h3>
-                  <p className="text-sm text-chat-text-muted">{feature.description}</p>
+                  <Icon className="h-6 w-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
+                  <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors text-sm">{feature.title}</h3>
+                  <p className="text-xs text-chat-text-muted">{feature.description}</p>
                 </div>
               );
             })}
@@ -180,7 +180,7 @@ const ChatInterface = () => {
         </div>
 
         {/* Input Area */}
-        <div className="p-6 border-t border-chat-border bg-chat-sidebar">
+        <div className="p-4 border-t border-chat-border bg-chat-sidebar flex-shrink-0">
           {/* Tabs */}
           <div className="flex gap-2 mb-4">
             {tabs.map((tab) => {
