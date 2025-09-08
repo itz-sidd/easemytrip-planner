@@ -76,15 +76,29 @@ const UserPreferences = () => {
 
       if (data) {
         setPreferences(data);
+        const budgetRange = data.budget_range as any;
+        const transportPrefs = Array.isArray(data.transport_preferences) 
+          ? (data.transport_preferences as any[]).map(String) 
+          : [];
+        const interests = Array.isArray(data.interests) 
+          ? (data.interests as any[]).map(String) 
+          : [];
+        const dietaryRestrictions = Array.isArray(data.dietary_restrictions) 
+          ? (data.dietary_restrictions as any[]).map(String) 
+          : [];
+        const accessibilityNeeds = Array.isArray(data.accessibility_needs) 
+          ? (data.accessibility_needs as any[]).map(String) 
+          : [];
+        
         setFormData({
           preferred_group_type: data.preferred_group_type || '',
-          budget_min: data.budget_range?.min?.toString() || '',
-          budget_max: data.budget_range?.max?.toString() || '',
+          budget_min: budgetRange?.min?.toString() || '',
+          budget_max: budgetRange?.max?.toString() || '',
           preferred_hotel_category: data.preferred_hotel_category || '',
-          transport_preferences: data.transport_preferences || [],
-          interests: data.interests || [],
-          dietary_restrictions: data.dietary_restrictions || [],
-          accessibility_needs: data.accessibility_needs || []
+          transport_preferences: transportPrefs,
+          interests: interests,
+          dietary_restrictions: dietaryRestrictions,
+          accessibility_needs: accessibilityNeeds
         });
       }
     } catch (error) {
@@ -114,16 +128,16 @@ const UserPreferences = () => {
 
       const preferenceData = {
         user_id: user.id,
-        preferred_group_type: formData.preferred_group_type || null,
+        preferred_group_type: (formData.preferred_group_type || null) as any,
         budget_range: {
           min: parseFloat(formData.budget_min) || 0,
           max: parseFloat(formData.budget_max) || 10000
-        },
-        preferred_hotel_category: formData.preferred_hotel_category || null,
-        transport_preferences: formData.transport_preferences,
-        interests: formData.interests,
-        dietary_restrictions: formData.dietary_restrictions,
-        accessibility_needs: formData.accessibility_needs
+        } as any,
+        preferred_hotel_category: (formData.preferred_hotel_category || null) as any,
+        transport_preferences: formData.transport_preferences as any,
+        interests: formData.interests as any,
+        dietary_restrictions: formData.dietary_restrictions as any,
+        accessibility_needs: formData.accessibility_needs as any
       };
 
       const { error } = await supabase
