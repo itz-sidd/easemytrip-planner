@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Send, MessageCircle, Users, Calendar, MapPin, Plane } from "lucide-react";
+import { Send, MessageCircle, Users, Calendar, MapPin, Plane, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 export function ChatDashboard() {
   const [message, setMessage] = useState("");
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
+  const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect to auth if not logged in (after loading is complete)
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
 
   const chatHistory: Array<{ type: "user" | "assistant"; content: string }> = [];
 
@@ -51,6 +60,25 @@ export function ChatDashboard() {
     }
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+  };
+
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-chat-bg flex items-center justify-center">
+        <div className="text-chat-text">Loading...</div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-chat-bg text-chat-text">
       {/* Header */}
@@ -60,15 +88,26 @@ export function ChatDashboard() {
             <div className="flex items-center gap-3">
               <MessageCircle className="h-6 w-6 text-primary" />
               <h1 className="text-xl font-semibold text-chat-text">AI Assistant</h1>
+              <span className="text-sm text-chat-secondary">Welcome, {user.email}</span>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={() => navigate("/travel")}
-              className="text-chat-text border-chat-border hover:bg-chat-hover"
-            >
-              <Plane className="h-4 w-4 mr-2" />
-              Travel Planner
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate("/travel")}
+                className="text-chat-text border-chat-border hover:bg-chat-hover"
+              >
+                <Plane className="h-4 w-4 mr-2" />
+                Travel Planner
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={handleSignOut}
+                className="text-chat-text hover:bg-chat-hover"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </header>
