@@ -22,6 +22,7 @@ import {
 const ChatInterface = () => {
   const [message, setMessage] = useState("");
   const [activeTab, setActiveTab] = useState("All");
+  const [hasStartedChat, setHasStartedChat] = useState(false);
 
   const chatHistory = [
     { title: "Plan a 3-day trip", subtitle: "A 3-day trip to see the northern lights in Norway..." },
@@ -55,6 +56,14 @@ const ChatInterface = () => {
       description: "Chrome language for better interaction.",
     }
   ];
+
+  const handleSendMessage = () => {
+    if (message.trim()) {
+      setHasStartedChat(true);
+      console.log('Send message:', message);
+      setMessage("");
+    }
+  };
 
   return (
     <div className="h-screen bg-chat-bg text-chat-text flex overflow-hidden max-h-screen">
@@ -150,33 +159,46 @@ const ChatInterface = () => {
 
         {/* Welcome Area */}
         <div className="flex-1 flex flex-col justify-center items-center p-4 animate-fade-in overflow-y-auto">
-          <div className="max-w-2xl text-center mb-6">
-            <h1 className="text-4xl font-bold mb-4 animate-scale-in text-chat-text">
-              How can I help you today?
-            </h1>
-            <p className="text-chat-text-muted text-base mb-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              This code will display a prompt asking the user for their name, and then it will
-              display a greeting message with the name entered by the user.
-            </p>
-          </div>
+          {!hasStartedChat && (
+            <>
+              <div className="max-w-2xl text-center mb-6">
+                <h1 className="text-4xl font-bold mb-4 animate-scale-in text-chat-text">
+                  How can I help you today?
+                </h1>
+                <p className="text-chat-text-muted text-base mb-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                  This code will display a prompt asking the user for their name, and then it will
+                  display a greeting message with the name entered by the user.
+                </p>
+              </div>
 
-          {/* Feature Cards */}
-          <div className="grid md:grid-cols-3 gap-4 mb-6 w-full max-w-4xl">
-            {featureCards.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div 
-                  key={feature.title}
-                  className="bg-chat-card border border-chat-border rounded-lg p-4 hover:bg-chat-hover transition-all duration-300 cursor-pointer group animate-scale-in hover:scale-105"
-                  style={{ animationDelay: `${index * 0.1 + 0.3}s` }}
-                >
-                  <Icon className="h-6 w-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
-                  <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors text-sm">{feature.title}</h3>
-                  <p className="text-xs text-chat-text-muted">{feature.description}</p>
-                </div>
-              );
-            })}
-          </div>
+              {/* Feature Cards */}
+              <div className="grid md:grid-cols-3 gap-4 mb-6 w-full max-w-4xl">
+                {featureCards.map((feature, index) => {
+                  const Icon = feature.icon;
+                  return (
+                    <div 
+                      key={feature.title}
+                      className="bg-chat-card border border-chat-border rounded-lg p-4 hover:bg-chat-hover transition-all duration-300 cursor-pointer group animate-scale-in hover:scale-105"
+                      style={{ animationDelay: `${index * 0.1 + 0.3}s` }}
+                    >
+                      <Icon className="h-6 w-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
+                      <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors text-sm">{feature.title}</h3>
+                      <p className="text-xs text-chat-text-muted">{feature.description}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+          
+          {hasStartedChat && (
+            <div className="w-full max-w-4xl">
+              {/* Chat messages would go here */}
+              <div className="text-center text-chat-text-muted">
+                Chat conversation will appear here...
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Input Area */}
@@ -209,12 +231,13 @@ const ChatInterface = () => {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="What do you have in mind?"
               className="bg-chat-card border-chat-border text-chat-text pr-12 py-4 text-base focus:border-primary transition-all duration-200"
-              onKeyPress={(e) => e.key === 'Enter' && message.trim() && console.log('Send message:', message)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
             />
             <Button 
               size="icon"
               className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary-light transition-all duration-200 hover:scale-110"
               disabled={!message.trim()}
+              onClick={handleSendMessage}
             >
               <Send className="h-4 w-4" />
             </Button>
