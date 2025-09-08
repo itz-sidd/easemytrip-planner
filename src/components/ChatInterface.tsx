@@ -25,10 +25,8 @@ const ChatInterface = () => {
 
   const chatHistory = [
     { title: "Plan a 3-day trip", subtitle: "A 3-day trip to see the northern lights in Norway..." },
-    { title: "Beach vacation ideas", subtitle: "Looking for tropical destinations with..." },
-    { title: "Business travel to Tokyo", subtitle: "Need recommendations for hotels and..." },
-    { title: "Family trip to Europe", subtitle: "Planning a 2-week Europe trip with kids..." },
-    { title: "Weekend getaway", subtitle: "Quick weekend trip ideas within 500 miles..." }
+    { title: "Ideas for a customer loyalty program", subtitle: "Here are seven ideas for a customer loyalty..." },
+    { title: "Help me pick", subtitle: "Here are some gift ideas for your fishing-loving..." }
   ];
 
   const tabs = [
@@ -43,18 +41,18 @@ const ChatInterface = () => {
   const featureCards = [
     {
       icon: Bookmark,
-      title: "Smart Itineraries",
-      description: "AI-generated travel plans tailored to your preferences and budget.",
+      title: "Saved Prompt Templates",
+      description: "Users can save and reuse prompt templates for faster responses.",
+    },
+    {
+      icon: Image,
+      title: "Media Type Selector",
+      description: "Users select media type for tailored interactions.",
     },
     {
       icon: MapPin,
-      title: "Destination Insights",
-      description: "Real-time information about weather, events, and local recommendations.",
-    },
-    {
-      icon: DollarSign,
-      title: "Price Optimization",
-      description: "Find the best deals and optimize your travel budget automatically.",
+      title: "Multilingual Support",
+      description: "Chrome language for better interaction.",
     }
   ];
 
@@ -88,16 +86,18 @@ const ChatInterface = () => {
             <span className="text-sm font-medium text-chat-text-muted">Folders</span>
             <FolderOpen className="h-4 w-4 text-chat-text-muted" />
           </div>
-          <div className="space-y-2">
-            {["Vacation plans", "Business trips", "Weekend getaways", "International travel"].map((folder, index) => (
+          <div className="space-y-1">
+            {["Work chats", "Life chats", "Projects chats", "Clients chats"].map((folder, index) => (
               <div 
                 key={folder}
-                className="flex items-center gap-3 p-2 rounded-md hover:bg-chat-hover cursor-pointer transition-all duration-200 animate-fade-in"
+                className="flex items-center justify-between p-2 rounded-md hover:bg-chat-hover cursor-pointer transition-all duration-200 animate-fade-in group"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <FolderOpen className="h-4 w-4 text-chat-text-muted" />
-                <span className="text-sm">{folder}</span>
-                <MoreHorizontal className="h-4 w-4 text-chat-text-muted ml-auto opacity-0 group-hover:opacity-100" />
+                <div className="flex items-center gap-3">
+                  <FolderOpen className="h-4 w-4 text-chat-text-muted" />
+                  <span className="text-sm">{folder}</span>
+                </div>
+                <MoreHorizontal className="h-4 w-4 text-chat-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             ))}
           </div>
@@ -126,7 +126,7 @@ const ChatInterface = () => {
         <div className="p-4">
           <Button className="w-full bg-primary hover:bg-primary-light transition-all duration-200 hover:scale-105">
             <Plus className="h-4 w-4 mr-2" />
-            New Trip
+            New chat
           </Button>
         </div>
       </div>
@@ -136,12 +136,14 @@ const ChatInterface = () => {
         {/* Chat Header */}
         <div className="p-4 border-b border-chat-border bg-chat-sidebar">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center animate-pulse-glow">
-              <Sparkles className="h-4 w-4 text-white" />
-            </div>
+            <button className="text-chat-text-muted hover:text-chat-text">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
             <div>
-              <h2 className="font-semibold">EaseMyTrip AI Assistant</h2>
-              <span className="text-xs text-chat-text-muted">Powered by GPT-4</span>
+              <h2 className="font-semibold text-chat-text">Name chat</h2>
+              <span className="text-xs text-primary bg-primary/20 px-2 py-1 rounded">GPT 3.5</span>
             </div>
           </div>
         </div>
@@ -149,12 +151,12 @@ const ChatInterface = () => {
         {/* Welcome Area */}
         <div className="flex-1 flex flex-col justify-center items-center p-8 animate-fade-in">
           <div className="max-w-2xl text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4 animate-scale-in">
-              How can I help you plan your trip today?
+            <h1 className="text-4xl font-bold mb-4 animate-scale-in text-chat-text">
+              How can I help you today?
             </h1>
-            <p className="text-chat-text-muted text-lg mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              I'm your AI travel assistant. Tell me where you want to go, your budget, and preferences, 
-              and I'll create the perfect itinerary for you.
+            <p className="text-chat-text-muted text-base mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              This code will display a prompt asking the user for their name, and then it will
+              display a greeting message with the name entered by the user.
             </p>
           </div>
 
@@ -205,7 +207,7 @@ const ChatInterface = () => {
             <Input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Describe your dream trip... (e.g., 'I want a romantic 5-day trip to Paris under $2000')"
+              placeholder="What do you have in mind?"
               className="bg-chat-card border-chat-border text-chat-text pr-12 py-4 text-base focus:border-primary transition-all duration-200"
               onKeyPress={(e) => e.key === 'Enter' && message.trim() && console.log('Send message:', message)}
             />
@@ -219,7 +221,7 @@ const ChatInterface = () => {
           </div>
 
           <p className="text-xs text-chat-text-muted mt-2 text-center">
-            This AI can make mistakes. Always verify important travel information.
+            This product can make mistakes. Consider checking important information.
           </p>
         </div>
       </div>
