@@ -122,14 +122,14 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-chat-bg text-chat-text flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="flex items-center gap-3 mb-8">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-chat-secondary hover:text-chat-text"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to App
@@ -137,70 +137,84 @@ export default function AuthPage() {
         </div>
 
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">Welcome</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-chat-text">Welcome</h1>
+          <p className="text-chat-secondary">
             Sign in to your account or create a new one to start planning your trips
           </p>
         </div>
 
         {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
+          <Alert variant="destructive" className="bg-destructive/10 border-destructive/20">
+            <AlertDescription className="text-destructive">{error}</AlertDescription>
           </Alert>
         )}
 
         <Tabs defaultValue="signin" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 bg-chat-sidebar">
+            <TabsTrigger 
+              value="signin"
+              className="data-[state=active]:bg-chat-bg data-[state=active]:text-primary"
+            >
+              Sign In
+            </TabsTrigger>
+            <TabsTrigger 
+              value="signup"
+              className="data-[state=active]:bg-chat-bg data-[state=active]:text-primary"
+            >
+              Sign Up
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="signin">
-            <Card>
+            <Card className="bg-chat-sidebar border-chat-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-chat-text">
                   <User className="h-5 w-5" />
                   Sign In
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-chat-secondary">
                   Enter your credentials to access your account
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
+                    <Label htmlFor="signin-email" className="text-chat-text">Email</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-chat-secondary" />
                       <Input
                         id="signin-email"
                         type="email"
                         placeholder="Enter your email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 bg-chat-bg border-chat-border text-chat-text placeholder:text-chat-secondary"
                         required
                         disabled={isLoading}
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
+                    <Label htmlFor="signin-password" className="text-chat-text">Password</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-chat-secondary" />
                       <Input
                         id="signin-password"
                         type="password"
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 bg-chat-bg border-chat-border text-chat-text placeholder:text-chat-secondary"
                         required
                         disabled={isLoading}
                       />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
+                    disabled={isLoading}
+                  >
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -216,45 +230,45 @@ export default function AuthPage() {
           </TabsContent>
 
           <TabsContent value="signup">
-            <Card>
+            <Card className="bg-chat-sidebar border-chat-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-chat-text">
                   <User className="h-5 w-5" />
                   Create Account
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-chat-secondary">
                   Create a new account to start planning your travels
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
+                    <Label htmlFor="signup-email" className="text-chat-text">Email</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-chat-secondary" />
                       <Input
                         id="signup-email"
                         type="email"
                         placeholder="Enter your email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 bg-chat-bg border-chat-border text-chat-text placeholder:text-chat-secondary"
                         required
                         disabled={isLoading}
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
+                    <Label htmlFor="signup-password" className="text-chat-text">Password</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-chat-secondary" />
                       <Input
                         id="signup-password"
                         type="password"
                         placeholder="Create a password (min. 6 characters)"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 bg-chat-bg border-chat-border text-chat-text placeholder:text-chat-secondary"
                         required
                         disabled={isLoading}
                         minLength={6}
@@ -262,22 +276,26 @@ export default function AuthPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <Label htmlFor="confirm-password" className="text-chat-text">Confirm Password</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-chat-secondary" />
                       <Input
                         id="confirm-password"
                         type="password"
                         placeholder="Confirm your password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 bg-chat-bg border-chat-border text-chat-text placeholder:text-chat-secondary"
                         required
                         disabled={isLoading}
                       />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
+                    disabled={isLoading}
+                  >
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -293,7 +311,7 @@ export default function AuthPage() {
           </TabsContent>
         </Tabs>
 
-        <div className="text-center text-sm text-muted-foreground">
+        <div className="text-center text-sm text-chat-secondary">
           <p>
             By signing up, you agree to our terms of service and privacy policy.
           </p>
