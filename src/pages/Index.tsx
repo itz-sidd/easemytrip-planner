@@ -1,9 +1,9 @@
-import ChatInterface from "@/components/ChatInterface";
+import TravelPlanningApp from "@/components/TravelPlanningApp";
 
 const Index = () => {
   return (
     <div className="dark">
-      <ChatInterface />
+      <TravelPlanningApp />
     </div>
   );
 };
