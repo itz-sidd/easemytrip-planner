@@ -2,24 +2,20 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
-  MessageSquare, 
-  Search, 
-  Plus, 
-  MoreHorizontal,
-  FolderOpen,
-  Bookmark,
+  Send,
   Image,
   Video,
   Music,
   BarChart3,
-  Send,
-  Sparkles,
   MapPin,
   Calendar,
-  DollarSign
+  DollarSign,
+  Plane,
+  Hotel,
+  Users
 } from "lucide-react";
 
-const ChatInterface = () => {
+export const ChatInterface = () => {
   const [message, setMessage] = useState("");
   const [activeTab, setActiveTab] = useState("All");
   const [hasStartedChat, setHasStartedChat] = useState(false);
@@ -41,19 +37,34 @@ const ChatInterface = () => {
 
   const featureCards = [
     {
-      icon: Bookmark,
-      title: "Saved Prompt Templates",
-      description: "Users can save and reuse prompt templates for faster responses.",
-    },
-    {
-      icon: Image,
-      title: "Media Type Selector",
-      description: "Users select media type for tailored interactions.",
-    },
-    {
       icon: MapPin,
-      title: "Multilingual Support",
-      description: "Chrome language for better interaction.",
+      title: "Plan Your Trip",
+      description: "AI-powered travel planning with personalized recommendations.",
+    },
+    {
+      icon: Hotel,
+      title: "Find Hotels",
+      description: "Discover perfect accommodations for your journey.",
+    },
+    {
+      icon: Plane,
+      title: "Book Transport",
+      description: "Compare flights, trains, and other transport options.",
+    },
+    {
+      icon: Calendar,
+      title: "Create Itinerary",
+      description: "Build detailed day-by-day travel schedules.",
+    },
+    {
+      icon: Users,
+      title: "Group Travel",
+      description: "Plan trips for families, couples, or friend groups.",
+    },
+    {
+      icon: DollarSign,
+      title: "Budget Planning",
+      description: "Manage travel expenses and find deals within your budget.",
     }
   ];
 
@@ -66,93 +77,15 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="h-screen bg-chat-bg text-chat-text flex overflow-hidden max-h-screen">
-      {/* Sidebar */}
-      <div className="w-80 bg-chat-sidebar border-r border-chat-border flex flex-col animate-slide-in-left">
-        {/* Header */}
-        <div className="p-4 border-b border-chat-border">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-lg font-semibold flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              My Trips
-            </h1>
-            <MoreHorizontal className="h-5 w-5 text-chat-text-muted cursor-pointer hover:text-chat-text transition-colors" />
-          </div>
-          
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-chat-text-muted" />
-            <Input 
-              placeholder="Search trips..." 
-              className="bg-chat-card border-chat-border text-chat-text pl-10 focus:border-primary"
-            />
-          </div>
-        </div>
-
-        {/* Folders */}
-        <div className="p-4 border-b border-chat-border">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-chat-text-muted">Folders</span>
-            <FolderOpen className="h-4 w-4 text-chat-text-muted" />
-          </div>
-          <div className="space-y-1">
-            {["Work chats", "Life chats", "Projects chats", "Clients chats"].map((folder, index) => (
-              <div 
-                key={folder}
-                className="flex items-center justify-between p-2 rounded-md hover:bg-chat-hover cursor-pointer transition-all duration-200 animate-fade-in group"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="flex items-center gap-3">
-                  <FolderOpen className="h-4 w-4 text-chat-text-muted" />
-                  <span className="text-sm">{folder}</span>
-                </div>
-                <MoreHorizontal className="h-4 w-4 text-chat-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Chat History */}
-        <div className="flex-1 p-4 overflow-y-auto">
-          <div className="mb-3">
-            <span className="text-sm font-medium text-chat-text-muted">Chats</span>
-          </div>
-          <div className="space-y-2">
-            {chatHistory.map((chat, index) => (
-              <div 
-                key={chat.title}
-                className="p-3 rounded-md hover:bg-chat-hover cursor-pointer transition-all duration-200 group animate-fade-in hover:scale-[1.02]"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <h4 className="font-medium text-sm mb-1 group-hover:text-primary transition-colors">{chat.title}</h4>
-                <p className="text-xs text-chat-text-muted line-clamp-2">{chat.subtitle}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* New Chat Button */}
-        <div className="p-4">
-          <Button className="w-full bg-primary hover:bg-primary-light transition-all duration-200 hover:scale-105">
-            <Plus className="h-4 w-4 mr-2" />
-            New chat
-          </Button>
-        </div>
-      </div>
-
+    <div className="h-full bg-chat-bg text-chat-text flex flex-col overflow-hidden">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Chat Header */}
         <div className="p-4 border-b border-chat-border bg-chat-sidebar">
           <div className="flex items-center gap-3">
-            <button className="text-chat-text-muted hover:text-chat-text">
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
             <div>
-              <h2 className="font-semibold text-chat-text">Name chat</h2>
-              <span className="text-xs text-primary bg-primary/20 px-2 py-1 rounded">GPT 3.5</span>
+              <h2 className="font-semibold text-chat-text">AI Travel Assistant</h2>
+              <span className="text-xs text-primary bg-primary/20 px-2 py-1 rounded">GPT 4</span>
             </div>
           </div>
         </div>
@@ -163,22 +96,22 @@ const ChatInterface = () => {
             <>
               <div className="max-w-2xl text-center mb-6">
                 <h1 className="text-4xl font-bold mb-4 animate-scale-in text-chat-text">
-                  How can I help you today?
+                  Plan your perfect trip with AI
                 </h1>
                 <p className="text-chat-text-muted text-base mb-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                  This code will display a prompt asking the user for their name, and then it will
-                  display a greeting message with the name entered by the user.
+                  I'm your AI travel assistant. Ask me anything about destinations, planning, bookings, 
+                  or use the sidebar to access detailed planning tools for a step-by-step experience.
                 </p>
               </div>
 
               {/* Feature Cards */}
-              <div className="flex flex-wrap justify-center gap-8 mb-6 w-full max-w-4xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 w-full max-w-6xl">
                 {featureCards.map((feature, index) => {
                   const Icon = feature.icon;
                   return (
                     <div 
                       key={feature.title}
-                      className="flex items-center gap-4 p-4 rounded-full bg-chat-card/30 hover:bg-chat-card/50 transition-all duration-300 cursor-pointer group animate-scale-in border border-chat-border/30 hover:border-primary/30"
+                      className="flex flex-col gap-3 p-4 rounded-lg bg-chat-card/30 hover:bg-chat-card/50 transition-all duration-300 cursor-pointer group animate-scale-in border border-chat-border/30 hover:border-primary/30"
                       style={{ animationDelay: `${index * 0.1 + 0.3}s` }}
                     >
                       <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
@@ -186,7 +119,7 @@ const ChatInterface = () => {
                       </div>
                       <div className="text-left">
                         <h3 className="font-medium text-chat-text text-sm mb-1 group-hover:text-primary transition-colors">{feature.title}</h3>
-                        <p className="text-xs text-chat-text-muted max-w-48">{feature.description}</p>
+                        <p className="text-xs text-chat-text-muted">{feature.description}</p>
                       </div>
                     </div>
                   );
@@ -233,7 +166,7 @@ const ChatInterface = () => {
             <Input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="What do you have in mind?"
+              placeholder="Ask me about travel destinations, planning tips, or anything travel-related..."
               className="bg-chat-card border-chat-border text-chat-text pr-12 py-4 text-base focus:border-primary transition-all duration-200"
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
             />
@@ -248,7 +181,7 @@ const ChatInterface = () => {
           </div>
 
           <p className="text-xs text-chat-text-muted mt-2 text-center">
-            This product can make mistakes. Consider checking important information.
+            AI can make mistakes. Always verify travel information and bookings independently.
           </p>
         </div>
       </div>

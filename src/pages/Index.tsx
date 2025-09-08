@@ -1,9 +1,9 @@
-import TravelPlanningApp from "@/components/TravelPlanningApp";
+import { MainLayout } from "@/components/MainLayout";
 
 const Index = () => {
   return (
     <div className="dark">
-      <TravelPlanningApp />
+      <MainLayout />
     </div>
   );
 };
