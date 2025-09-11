@@ -37,7 +37,10 @@ const LocationSearchWithMap: React.FC<LocationSearchWithMapProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [mapCenter, setMapCenter] = useState<LatLngExpression>([20.5937, 78.9629]); // India center
   const [mapZoom, setMapZoom] = useState(5);
+  const [mounted, setMounted] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (selectedLocation) {
@@ -164,29 +167,32 @@ const LocationSearchWithMap: React.FC<LocationSearchWithMapProps> = ({
       </div>
 
       <div className="h-64 w-full rounded-lg overflow-hidden border">
-        <MapContainer
-          center={mapCenter}
-          zoom={mapZoom}
-          style={{ height: '100%', width: '100%' }}
-          key={`${mapCenter[0]}-${mapCenter[1]}-${mapZoom}`}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          {selectedLocation && (
-            <Marker position={[selectedLocation.coordinates.lat, selectedLocation.coordinates.lng]}>
-              <Popup>
-                <div className="text-center">
-                  <div className="font-semibold">{selectedLocation.city || selectedLocation.formatted}</div>
-                  {selectedLocation.country && (
-                    <div className="text-sm text-muted-foreground">{selectedLocation.country}</div>
-                  )}
-                </div>
-              </Popup>
-            </Marker>
-          )}
-        </MapContainer>
+        {mounted ? (
+          <MapContainer
+            center={mapCenter}
+            zoom={mapZoom}
+            style={{ height: '100%', width: '100%' }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            {selectedLocation && (
+              <Marker position={[selectedLocation.coordinates.lat, selectedLocation.coordinates.lng]}>
+                <Popup>
+                  <div className="text-center">
+                    <div className="font-semibold">{selectedLocation.city || selectedLocation.formatted}</div>
+                    {selectedLocation.country && (
+                      <div className="text-sm text-muted-foreground">{selectedLocation.country}</div>
+                    )}
+                  </div>
+                </Popup>
+              </Marker>
+            )}
+          </MapContainer>
+        ) : (
+          <div className="w-full h-full bg-muted" />
+        )}
       </div>
     </div>
   );
