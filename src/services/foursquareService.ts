@@ -77,27 +77,23 @@ class FoursquareService {
   ): Promise<NearbyPlace[]> {
     try {
       // Use Supabase Edge Function to make the API call with the secret key
-      const response = await fetch('/api/foursquare-search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          lat, 
-          lng, 
+      const { data, error } = await (await import('@/integrations/supabase/client')).supabase.functions.invoke('foursquare-search', {
+        body: {
+          lat,
+          lng,
           categories: categories.join(','),
           radius,
           limit
-        })
+        }
       });
 
-      if (!response.ok) {
+      if (error || !data) {
         throw new Error('Failed to fetch nearby places');
       }
 
-      const data: FoursquareResponse = await response.json();
+      const responseData: FoursquareResponse = data as FoursquareResponse;
       
-      return data.results.map(venue => ({
+      return responseData.results.map(venue => ({
         id: venue.fsq_id,
         name: venue.name,
         category: venue.categories[0]?.name || 'Place',

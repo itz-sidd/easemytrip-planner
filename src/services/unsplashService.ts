@@ -43,25 +43,21 @@ class UnsplashService {
       const searchQuery = `${destination} ${interestTerms}`;
 
       // Use Supabase Edge Function to make the API call with the secret key
-      const response = await fetch('/api/unsplash-search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          query: searchQuery, 
+      const { data, error } = await (await import('@/integrations/supabase/client')).supabase.functions.invoke('unsplash-search', {
+        body: {
+          query: searchQuery,
           per_page: count,
           orientation: 'landscape'
-        })
+        }
       });
 
-      if (!response.ok) {
+      if (error || !data) {
         throw new Error('Failed to fetch destination photos');
       }
 
-      const data: UnsplashResponse = await response.json();
+      const responseData: UnsplashResponse = data as UnsplashResponse;
       
-      return data.results.map(photo => ({
+      return responseData.results.map(photo => ({
         id: photo.id,
         url: photo.urls.regular,
         thumbnailUrl: photo.urls.small,

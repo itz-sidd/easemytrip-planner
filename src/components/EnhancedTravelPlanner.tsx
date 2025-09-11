@@ -19,7 +19,7 @@ import {
   IndianRupee
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import LocationSearchWithMap from '@/components/enhanced/LocationSearchWithMap';
+import LocationSearchWithLeaflet from '@/components/enhanced/LocationSearchWithLeaflet';
 import DestinationInsights from '@/components/enhanced/DestinationInsights';
 import NearbyPlaces from '@/components/enhanced/NearbyPlaces';
 import { LocationSuggestion } from '@/services/geoapifyService';
@@ -353,7 +353,7 @@ const EnhancedTravelPlanner: React.FC = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <LocationSearchWithMap
+                  <LocationSearchWithLeaflet
                     onLocationSelect={handleLocationSelect}
                     selectedLocation={selectedLocation}
                     placeholder="Search for cities, countries, or landmarks..."

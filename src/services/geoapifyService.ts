@@ -42,21 +42,17 @@ class GeoapifyService {
 
     try {
       // Use Supabase Edge Function to make the API call with the secret key
-      const response = await fetch('/api/geoapify-search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ query, limit })
+      const { data, error } = await (await import('@/integrations/supabase/client')).supabase.functions.invoke('geoapify-search', {
+        body: { query, limit }
       });
 
-      if (!response.ok) {
+      if (error || !data) {
         throw new Error('Failed to search locations');
       }
 
-      const data: GeoapifyResponse = await response.json();
+      const responseData: GeoapifyResponse = data as GeoapifyResponse;
       
-      return data.features.map(feature => ({
+      return responseData.features.map(feature => ({
         id: feature.properties.place_id,
         formatted: feature.properties.formatted,
         city: feature.properties.city,
@@ -85,22 +81,18 @@ class GeoapifyService {
         async (position) => {
           try {
             const { latitude, longitude } = position.coords;
-            const response = await fetch('/api/geoapify-reverse', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ lat: latitude, lng: longitude })
+            const { data, error } = await (await import('@/integrations/supabase/client')).supabase.functions.invoke('geoapify-reverse', {
+              body: { lat: latitude, lng: longitude }
             });
 
-            if (!response.ok) {
+            if (error || !data) {
               resolve(null);
               return;
             }
 
-            const data: GeoapifyResponse = await response.json();
-            if (data.features.length > 0) {
-              const feature = data.features[0];
+            const responseData: GeoapifyResponse = data as GeoapifyResponse;
+            if (responseData.features.length > 0) {
+              const feature = responseData.features[0];
               resolve({
                 id: feature.properties.place_id,
                 formatted: feature.properties.formatted,
