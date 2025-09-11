@@ -1,9 +1,10 @@
 interface ExchangeRateResponse {
-  result: string;
-  conversion_rates: {
+  success?: boolean;
+  rates?: {
     INR: number;
   };
 }
+
 
 interface CurrencyConversion {
   amount: number;
@@ -18,7 +19,7 @@ class CurrencyService {
   private exchangeRate: number | null = null;
   private lastFetch: number = 0;
   private readonly cacheDuration = 1000 * 60 * 60; // 1 hour
-  private readonly baseUrl = 'https://v6.exchangerate-api.com/v6/latest/USD';
+  private readonly baseUrl = 'https://api.exchangerate.host/latest?base=USD&symbols=INR';
 
   static getInstance(): CurrencyService {
     if (!CurrencyService.instance) {
@@ -39,8 +40,8 @@ class CurrencyService {
       const response = await fetch(this.baseUrl);
       const data: ExchangeRateResponse = await response.json();
       
-      if (data.result === 'success' && data.conversion_rates.INR) {
-        this.exchangeRate = data.conversion_rates.INR;
+      if (data?.rates?.INR) {
+        this.exchangeRate = data.rates.INR;
         this.lastFetch = now;
         return this.exchangeRate;
       }

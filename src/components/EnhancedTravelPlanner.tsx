@@ -197,21 +197,15 @@ const EnhancedTravelPlanner: React.FC = () => {
         accessibility_needs: formData.accessibility_needs
       };
 
-      let error;
-      if (preferences?.id) {
-        const { error: updateError } = await supabase
-          .from('user_preferences')
-          .update(preferenceData)
-          .eq('id', preferences.id);
-        error = updateError;
-      } else {
-        const { error: insertError } = await supabase
-          .from('user_preferences')
-          .insert(preferenceData);
-        error = insertError;
-      }
+      // Upsert by user_id to avoid unique constraint or missing row issues
+      const { data: upserted, error } = await supabase
+        .from('user_preferences')
+        .upsert(preferenceData, { onConflict: 'user_id' })
+        .select()
+        .maybeSingle();
 
       if (error) throw error;
+      if (upserted) setPreferences(upserted as unknown as UserPreference);
 
       toast({
         title: "Success",
@@ -223,7 +217,7 @@ const EnhancedTravelPlanner: React.FC = () => {
       console.error('Error saving preferences:', error);
       toast({
         title: "Error",
-        description: "Failed to save preferences",
+        description: typeof error === 'string' ? error : (error as any)?.message || 'Failed to save preferences',
         variant: "destructive"
       });
     } finally {
