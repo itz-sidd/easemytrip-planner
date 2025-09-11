@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+
 import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -17,6 +17,55 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
+
+// Lightweight Leaflet map without react-leaflet to avoid context issues
+const LeafletMap: React.FC<{
+  center: LatLngExpression;
+  zoom: number;
+  marker?: [number, number] | null;
+}> = ({ center, zoom, marker }) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+    mapRef.current = L.map(containerRef.current, {
+      zoomControl: true,
+    }).setView(center as any, zoom);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors",
+    }).addTo(mapRef.current);
+
+    return () => {
+      mapRef.current?.remove();
+      mapRef.current = null;
+      markerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    mapRef.current.setView(center as any, zoom);
+  }, [center, zoom]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    if (marker) {
+      if (!markerRef.current) {
+        markerRef.current = L.marker(marker).addTo(mapRef.current);
+      } else {
+        markerRef.current.setLatLng(marker);
+      }
+    } else if (markerRef.current) {
+      markerRef.current.remove();
+      markerRef.current = null;
+    }
+  }, [marker]);
+
+  return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
+};
 
 interface LocationSearchWithMapProps {
   onLocationSelect: (location: LocationSuggestion) => void;
@@ -168,28 +217,11 @@ const LocationSearchWithMap: React.FC<LocationSearchWithMapProps> = ({
 
       <div className="h-64 w-full rounded-lg overflow-hidden border">
         {mounted ? (
-          <MapContainer
+          <LeafletMap
             center={mapCenter}
             zoom={mapZoom}
-            style={{ height: '100%', width: '100%' }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            {selectedLocation && (
-              <Marker position={[selectedLocation.coordinates.lat, selectedLocation.coordinates.lng]}>
-                <Popup>
-                  <div className="text-center">
-                    <div className="font-semibold">{selectedLocation.city || selectedLocation.formatted}</div>
-                    {selectedLocation.country && (
-                      <div className="text-sm text-muted-foreground">{selectedLocation.country}</div>
-                    )}
-                  </div>
-                </Popup>
-              </Marker>
-            )}
-          </MapContainer>
+            marker={selectedLocation ? [selectedLocation.coordinates.lat, selectedLocation.coordinates.lng] : null}
+          />
         ) : (
           <div className="w-full h-full bg-muted" />
         )}
