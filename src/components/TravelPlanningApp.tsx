@@ -1,7 +1,7 @@
-import ConsolidatedTravelPlanner from "./ConsolidatedTravelPlanner";
+import EnhancedTravelPlanner from "./EnhancedTravelPlanner";
 
 const TravelPlanningApp = () => {
-  return <ConsolidatedTravelPlanner />;
+  return <EnhancedTravelPlanner />;
 };
 
 export default TravelPlanningApp;
