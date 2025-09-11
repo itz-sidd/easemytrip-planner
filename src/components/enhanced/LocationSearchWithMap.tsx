@@ -173,22 +173,26 @@ const LocationSearchWithMap: React.FC<LocationSearchWithMapProps> = ({
             zoom={mapZoom}
             style={{ height: '100%', width: '100%' }}
           >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            {selectedLocation && (
-              <Marker position={[selectedLocation.coordinates.lat, selectedLocation.coordinates.lng]}>
-                <Popup>
-                  <div className="text-center">
-                    <div className="font-semibold">{selectedLocation.city || selectedLocation.formatted}</div>
-                    {selectedLocation.country && (
-                      <div className="text-sm text-muted-foreground">{selectedLocation.country}</div>
-                    )}
-                  </div>
-                </Popup>
-              </Marker>
-            )}
+            {(() => (
+              <>
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                {selectedLocation && (
+                  <Marker position={[selectedLocation.coordinates.lat, selectedLocation.coordinates.lng]}>
+                    <Popup>
+                      <div className="text-center">
+                        <div className="font-semibold">{selectedLocation.city || selectedLocation.formatted}</div>
+                        {selectedLocation.country && (
+                          <div className="text-sm text-muted-foreground">{selectedLocation.country}</div>
+                        )}
+                      </div>
+                    </Popup>
+                  </Marker>
+                )}
+              </>
+            )) as unknown as React.ReactNode}
           </MapContainer>
         ) : (
           <div className="w-full h-full bg-muted" />
