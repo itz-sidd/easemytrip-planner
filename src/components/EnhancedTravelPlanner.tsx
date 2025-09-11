@@ -185,12 +185,12 @@ const EnhancedTravelPlanner: React.FC = () => {
 
       const preferenceData = {
         user_id: user.id,
-        preferred_group_type: formData.preferred_group_type as 'solo' | 'student' | 'couple' | 'family' | 'group',
+        preferred_group_type: (formData.preferred_group_type || null) as 'solo' | 'student' | 'couple' | 'family' | 'group' | null,
         budget_range: {
           min: parseInt(formData.budget_min) || 0,
           max: parseInt(formData.budget_max) || 0
         },
-        preferred_hotel_category: formData.preferred_hotel_category as 'budget' | 'mid_range' | 'luxury' | 'special',
+        preferred_hotel_category: (formData.preferred_hotel_category || null) as 'budget' | 'mid_range' | 'luxury' | 'special' | null,
         transport_preferences: formData.transport_preferences,
         interests: formData.interests,
         dietary_restrictions: formData.dietary_restrictions,

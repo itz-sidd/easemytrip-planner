@@ -108,8 +108,11 @@ const LocationSearchWithMap: React.FC<LocationSearchWithMapProps> = ({
     setIsLoading(true);
     try {
       const results = await geoapifyService.searchLocations(searchQuery, 8);
+      console.log('Search results:', results); // Debug log
       setSuggestions(results);
-      setShowSuggestions(true);
+      if (results.length > 0) {
+        setShowSuggestions(true);
+      }
     } catch (error) {
       console.error('Search error:', error);
       setSuggestions([]);
