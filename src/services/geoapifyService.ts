@@ -41,12 +41,16 @@ class GeoapifyService {
     }
 
     try {
+      console.log('Making geoapify search request for:', query);
       // Use Supabase Edge Function to make the API call with the secret key
       const { data, error } = await (await import('@/integrations/supabase/client')).supabase.functions.invoke('geoapify-search', {
         body: { query, limit }
       });
 
+      console.log('Geoapify edge function response:', { data, error });
+
       if (error || !data) {
+        console.error('Geoapify edge function error:', error);
         throw new Error('Failed to search locations');
       }
 

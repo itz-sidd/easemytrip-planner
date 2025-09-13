@@ -107,15 +107,19 @@ const LocationSearchWithMap: React.FC<LocationSearchWithMapProps> = ({
 
     setIsLoading(true);
     try {
+      console.log('Searching for:', searchQuery);
       const results = await geoapifyService.searchLocations(searchQuery, 8);
-      console.log('Search results:', results); // Debug log
+      console.log('Search results:', results);
       setSuggestions(results);
       if (results.length > 0) {
         setShowSuggestions(true);
+      } else {
+        console.log('No search results found');
       }
     } catch (error) {
       console.error('Search error:', error);
       setSuggestions([]);
+      setShowSuggestions(false);
     } finally {
       setIsLoading(false);
     }
@@ -189,7 +193,11 @@ const LocationSearchWithMap: React.FC<LocationSearchWithMapProps> = ({
             onBlur={handleInputBlur}
             className="pl-10 pr-12"
           />
-          {/* Current location button removed to avoid auto-location */}
+          {isLoading && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            </div>
+          )}
         </div>
 
         {showSuggestions && suggestions.length > 0 && (
