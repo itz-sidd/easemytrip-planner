@@ -6,7 +6,7 @@ import L from 'leaflet';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { MapPin, Navigation, Search } from 'lucide-react';
+import { MapPin, Search } from 'lucide-react';
 import { geoapifyService, LocationSuggestion } from '@/services/geoapifyService';
 import { cn } from '@/lib/utils';
 
@@ -181,16 +181,7 @@ const LocationSearchWithMap: React.FC<LocationSearchWithMapProps> = ({
             onBlur={handleInputBlur}
             className="pl-10 pr-12"
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleCurrentLocation}
-            disabled={isLoading}
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-          >
-            <Navigation className="h-4 w-4" />
-          </Button>
+          {/* Current location button removed to avoid auto-location */}
         </div>
 
         {showSuggestions && suggestions.length > 0 && (

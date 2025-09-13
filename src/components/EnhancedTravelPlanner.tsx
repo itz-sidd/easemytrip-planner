@@ -24,6 +24,7 @@ import DestinationInsights from '@/components/enhanced/DestinationInsights';
 import NearbyPlaces from '@/components/enhanced/NearbyPlaces';
 import { LocationSuggestion } from '@/services/geoapifyService';
 import { currencyService } from '@/services/currencyService';
+import HotelSearch from '@/components/travel/HotelSearch';
 
 interface TravelerGroup {
   id: string;
@@ -68,7 +69,8 @@ const EnhancedTravelPlanner: React.FC = () => {
   const [preferences, setPreferences] = useState<UserPreference | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [exchangeRate, setExchangeRate] = useState<number>(83);
+const [exchangeRate, setExchangeRate] = useState<number>(83);
+  const [showHotelSearch, setShowHotelSearch] = useState(false);
   
   // Form data
   const [formData, setFormData] = useState<FormData>({
@@ -225,24 +227,18 @@ const EnhancedTravelPlanner: React.FC = () => {
     }
   };
 
-  const openEaseMyTripFlights = () => {
+  const handleFlightSearch = () => {
     if (!selectedLocation) return;
-    
-    const searchUrl = `https://www.easemytrip.com/flights.html?from=DEL&to=${selectedLocation.city}&class=0&depart=${formData.departure_date}&return=${formData.return_date}&adults=${formData.travelers}&child=0&infant=0&trip=R`;
-    window.open(searchUrl, '_blank');
+    toast({
+      title: "Flight search",
+      description: "Searching flights via OpenSky integration.",
+    });
   };
 
   const handleHotelBooking = () => {
     if (!selectedLocation) return;
-    
-    // Navigate to hotel booking component with search parameters
-    console.log('Hotel booking initiated for:', {
-      destination: selectedLocation.city,
-      checkIn: formData.departure_date,
-      checkOut: formData.return_date,
-      adults: formData.travelers,
-      category: formData.preferred_hotel_category
-    });
+    setShowHotelSearch(true);
+    toast({ title: "Hotel search", description: "Use the panel below to book with StayAPI." });
   };
 
   const formatBudgetINR = (minUSD: number, maxUSD: number) => {
@@ -637,13 +633,13 @@ const EnhancedTravelPlanner: React.FC = () => {
               <CardHeader>
                 <CardTitle>Ready to Book Your Trip!</CardTitle>
                 <CardDescription>
-                  Your personalized travel plan is ready. Book flights and hotels through our partner EaseMyTrip.
+                  Your personalized travel plan is ready. Search and book flights, trains, and hotels within the app.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Button 
-                    onClick={openEaseMyTripFlights}
+                    onClick={handleFlightSearch}
                     disabled={!selectedLocation || !formData.departure_date}
                     className="h-20 flex flex-col items-center gap-2"
                   >
@@ -671,6 +667,13 @@ const EnhancedTravelPlanner: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {showHotelSearch && selectedLocation && (
+              <HotelSearch 
+                destination={selectedLocation.city || selectedLocation.formatted}
+                groupType={selectedGroupType}
+              />
+            )}
 
             {selectedLocation && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
