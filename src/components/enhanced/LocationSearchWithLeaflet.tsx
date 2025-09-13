@@ -136,6 +136,13 @@ const LocationSearchWithMap: React.FC<LocationSearchWithMapProps> = ({
     }, 300);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && suggestions.length > 0) {
+      e.preventDefault();
+      handleSuggestionClick(suggestions[0]);
+    }
+  };
+
   const handleSuggestionClick = (suggestion: LocationSuggestion) => {
     setQuery(suggestion.formatted);
     setShowSuggestions(false);
@@ -177,6 +184,7 @@ const LocationSearchWithMap: React.FC<LocationSearchWithMapProps> = ({
             placeholder={placeholder}
             value={query}
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             className="pl-10 pr-12"
