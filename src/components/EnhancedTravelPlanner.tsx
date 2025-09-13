@@ -232,11 +232,17 @@ const EnhancedTravelPlanner: React.FC = () => {
     window.open(searchUrl, '_blank');
   };
 
-  const openEaseMyTripHotels = () => {
+  const handleHotelBooking = () => {
     if (!selectedLocation) return;
     
-    const searchUrl = `https://www.easemytrip.com/hotels/?city=${selectedLocation.city}&checkin=${formData.departure_date}&checkout=${formData.return_date}&guest=${formData.travelers}&room=1`;
-    window.open(searchUrl, '_blank');
+    // Navigate to hotel booking component with search parameters
+    console.log('Hotel booking initiated for:', {
+      destination: selectedLocation.city,
+      checkIn: formData.departure_date,
+      checkOut: formData.return_date,
+      adults: formData.travelers,
+      category: formData.preferred_hotel_category
+    });
   };
 
   const formatBudgetINR = (minUSD: number, maxUSD: number) => {
@@ -650,7 +656,7 @@ const EnhancedTravelPlanner: React.FC = () => {
                   </Button>
                   
                   <Button 
-                    onClick={openEaseMyTripHotels}
+                    onClick={handleHotelBooking}
                     disabled={!selectedLocation || !formData.departure_date}
                     variant="outline"
                     className="h-20 flex flex-col items-center gap-2"

@@ -1,88 +1,79 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
-import { Hotel, Star, MapPin, Wifi, Car, Waves, Coffee, Filter } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { Hotel, Star, MapPin, Wifi, Car, Waves, Coffee, Filter, Calendar, Users } from "lucide-react";
+import { stayApiService, type Hotel as StayApiHotel, type HotelSearchParams, type BookingDetails } from "@/services/stayApiService";
 
-interface Hotel {
-  id: string;
-  destination_id: string;
-  name: string;
-  category: string;
-  rating?: number;
-  price_per_night: number;
-  address?: string;
-  amenities: any;
-  images: any;
-  description?: string;
-  latitude?: number;
-  longitude?: number;
+interface BookingFormData {
+  checkIn: string;
+  checkOut: string;
+  adults: number;
+  children: number;
+  rooms: number;
 }
 
 interface HotelSearchProps {
-  destination: any;
-  groupType: string | null;
+  destination: string;
+  groupType?: string;
 }
 
 const HotelSearch = ({ destination, groupType }: HotelSearchProps) => {
-  const [hotels, setHotels] = useState<Hotel[]>([]);
-  const [filteredHotels, setFilteredHotels] = useState<Hotel[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [hotels, setHotels] = useState<StayApiHotel[]>([]);
+  const [filteredHotels, setFilteredHotels] = useState<StayApiHotel[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedHotel, setSelectedHotel] = useState<StayApiHotel | null>(null);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [bookingForm, setBookingForm] = useState<BookingFormData>({
+    checkIn: new Date().toISOString().split('T')[0],
+    checkOut: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    adults: 1,
+    children: 0,
+    rooms: 1,
+  });
   const [filters, setFilters] = useState({
-    category: 'all',
+    category: '',
     maxPrice: '',
     minRating: '',
     sortBy: 'price'
   });
 
-  const categoryLabels = {
-    budget: 'Budget',
-    mid_range: 'Mid-Range',
-    luxury: 'Luxury',
-    special: 'Special'
-  };
-
-  const amenityIcons = {
-    wifi: Wifi,
-    parking: Car,
-    pool: Waves,
-    restaurant: Coffee
-  };
-
   useEffect(() => {
     fetchHotels();
-  }, [destination]);
+  }, [destination, bookingForm.checkIn, bookingForm.checkOut, bookingForm.adults, bookingForm.children, bookingForm.rooms]);
 
   useEffect(() => {
     applyFilters();
   }, [hotels, filters]);
 
   const fetchHotels = async () => {
-    if (!destination) {
-      setLoading(false);
-      return;
-    }
-
+    if (!destination) return;
+    
+    setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('hotels')
-        .select('*')
-        .eq('destination_id', destination.id)
-        .order('price_per_night');
+      const searchParams: HotelSearchParams = {
+        destination,
+        checkIn: bookingForm.checkIn,
+        checkOut: bookingForm.checkOut,
+        adults: bookingForm.adults,
+        children: bookingForm.children,
+        rooms: bookingForm.rooms,
+        category: filters.category || undefined,
+        maxPrice: filters.maxPrice ? parseFloat(filters.maxPrice) : undefined,
+        minRating: filters.minRating ? parseFloat(filters.minRating) : undefined,
+      };
 
-      if (error) throw error;
-      setHotels(data || []);
+      const hotelResults = await stayApiService.searchHotels(searchParams);
+      setHotels(hotelResults);
     } catch (error) {
       console.error('Error fetching hotels:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load hotels",
-        variant: "destructive"
+      toast.error("Failed to load hotels", {
+        description: "Please check your search parameters and try again",
       });
     } finally {
       setLoading(false);
@@ -93,21 +84,21 @@ const HotelSearch = ({ destination, groupType }: HotelSearchProps) => {
     let filtered = [...hotels];
 
     // Filter by category
-    if (filters.category !== 'all') {
+    if (filters.category) {
       filtered = filtered.filter(hotel => hotel.category === filters.category);
     }
 
-    // Filter by price
+    // Filter by max price
     if (filters.maxPrice) {
       filtered = filtered.filter(hotel => hotel.price_per_night <= parseFloat(filters.maxPrice));
     }
 
-    // Filter by rating
+    // Filter by minimum rating
     if (filters.minRating) {
       filtered = filtered.filter(hotel => (hotel.rating || 0) >= parseFloat(filters.minRating));
     }
 
-    // Sort
+    // Sort results
     if (filters.sortBy === 'price') {
       filtered.sort((a, b) => a.price_per_night - b.price_per_night);
     } else if (filters.sortBy === 'rating') {
@@ -117,83 +108,53 @@ const HotelSearch = ({ destination, groupType }: HotelSearchProps) => {
     setFilteredHotels(filtered);
   };
 
-  const addSampleHotels = async () => {
-    if (!destination) return;
+  const handleBooking = async (hotel: StayApiHotel) => {
+    setSelectedHotel(hotel);
+    setIsBookingOpen(true);
+  };
 
-      const sampleHotels = [
-      {
-        destination_id: destination.id,
-        name: 'Grand Plaza Hotel',
-        category: 'luxury' as const,
-        rating: 4.8,
-        price_per_night: 299.99,
-        address: `123 Main Street, ${destination.name}`,
-        amenities: ['wifi', 'parking', 'pool', 'restaurant', 'spa', 'gym'],
-        images: ['https://images.unsplash.com/photo-1566073771259-6a8506099945'],
-        description: 'Luxury hotel with stunning city views and world-class amenities'
-      },
-      {
-        destination_id: destination.id,
-        name: 'City Center Inn',
-        category: 'mid_range' as const,
-        rating: 4.2,
-        price_per_night: 129.99,
-        address: `456 Central Ave, ${destination.name}`,
-        amenities: ['wifi', 'parking', 'restaurant'],
-        images: ['https://images.unsplash.com/photo-1564501049412-61c2a3083791'],
-        description: 'Comfortable mid-range hotel in the heart of the city'
-      },
-      {
-        destination_id: destination.id,
-        name: 'Budget Traveler Hostel',
-        category: 'budget' as const,
-        rating: 3.8,
-        price_per_night: 29.99,
-        address: `789 Backpacker St, ${destination.name}`,
-        amenities: ['wifi', 'shared_kitchen'],
-        images: ['https://images.unsplash.com/photo-1571896349842-33c89424de2d'],
-        description: 'Clean and affordable accommodation for budget travelers'
-      },
-      {
-        destination_id: destination.id,
-        name: 'Heritage Palace',
-        category: 'special' as const,
-        rating: 4.9,
-        price_per_night: 450.00,
-        address: `1 Royal Road, ${destination.name}`,
-        amenities: ['wifi', 'parking', 'pool', 'restaurant', 'spa', 'butler'],
-        images: ['https://images.unsplash.com/photo-1520250497591-112f2f40a3f4'],
-        description: 'Historic palace converted into a luxury hotel with unique architecture'
-      }
-    ];
+  const processBooking = async () => {
+    if (!selectedHotel) return;
 
     try {
-      const { error } = await supabase
-        .from('hotels')
-        .insert(sampleHotels);
+      const bookingDetails: BookingDetails = {
+        hotelId: selectedHotel.id,
+        checkIn: bookingForm.checkIn,
+        checkOut: bookingForm.checkOut,
+        guests: {
+          adults: bookingForm.adults,
+          children: bookingForm.children,
+        },
+        rooms: bookingForm.rooms,
+        totalPrice: selectedHotel.price_per_night * calculateNights(),
+        currency: selectedHotel.currency,
+      };
 
-      if (error) throw error;
+      const result = await stayApiService.bookHotel(bookingDetails);
       
-      toast({
-        title: "Success",
-        description: "Sample hotels added successfully"
+      toast.success("Hotel booked successfully!", {
+        description: `Confirmation: ${result.confirmationNumber}`,
       });
       
-      fetchHotels();
+      setIsBookingOpen(false);
     } catch (error) {
-      console.error('Error adding hotels:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add sample hotels",
-        variant: "destructive"
+      console.error('Booking error:', error);
+      toast.error("Booking failed", {
+        description: "Please try again or contact support",
       });
     }
   };
 
-  const renderStars = (rating?: number) => {
-    if (!rating) return null;
+  const calculateNights = () => {
+    const checkIn = new Date(bookingForm.checkIn);
+    const checkOut = new Date(bookingForm.checkOut);
+    const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const renderStars = (rating: number) => {
     return (
-      <div className="flex items-center gap-1">
+      <div className="flex">
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
@@ -202,114 +163,324 @@ const HotelSearch = ({ destination, groupType }: HotelSearchProps) => {
             }`}
           />
         ))}
-        <span className="text-sm text-muted-foreground ml-1">({rating})</span>
       </div>
     );
   };
 
   if (!destination) {
     return (
-      <div className="text-center py-12">
-        <Hotel className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <h3 className="text-lg font-medium mb-2">Select a destination first</h3>
-        <p className="text-muted-foreground">Choose your destination to see hotel options</p>
-      </div>
+      <Card>
+        <CardContent className="p-6 text-center">
+          <Hotel className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium mb-2">Search Hotels</h3>
+          <p className="text-muted-foreground">
+            Please select a destination to search for hotels
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
   if (loading) {
     return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Searching for hotels in {destination}...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (hotels.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <Hotel className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium mb-2">No hotels found</h3>
+          <p className="text-muted-foreground">
+            No hotels found in {destination}. Try adjusting your search criteria.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (filteredHotels.length === 0) {
+    return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-pulse">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-10 bg-muted rounded"></div>
-          ))}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <Card key={i} className="animate-pulse">
-              <div className="h-48 bg-muted rounded-t"></div>
-              <CardHeader>
-                <div className="h-4 bg-muted rounded w-3/4"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
+        {/* Search and Filter section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Hotel className="h-5 w-5" />
+              Hotel Search
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Booking Form */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div>
+                <Label>Check-in</Label>
+                <Input
+                  type="date"
+                  value={bookingForm.checkIn}
+                  onChange={(e) => setBookingForm(prev => ({ ...prev, checkIn: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Check-out</Label>
+                <Input
+                  type="date"
+                  value={bookingForm.checkOut}
+                  onChange={(e) => setBookingForm(prev => ({ ...prev, checkOut: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Adults</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={bookingForm.adults}
+                  onChange={(e) => setBookingForm(prev => ({ ...prev, adults: parseInt(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <Label>Children</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={bookingForm.children}
+                  onChange={(e) => setBookingForm(prev => ({ ...prev, children: parseInt(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <Label>Rooms</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={bookingForm.rooms}
+                  onChange={(e) => setBookingForm(prev => ({ ...prev, rooms: parseInt(e.target.value) }))}
+                />
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-3 flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Filters
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <Label>Category</Label>
+                  <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All categories</SelectItem>
+                      <SelectItem value="budget">Budget</SelectItem>
+                      <SelectItem value="mid_range">Mid Range</SelectItem>
+                      <SelectItem value="luxury">Luxury</SelectItem>
+                      <SelectItem value="special">Special/Boutique</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label>Max Price per Night</Label>
+                  <Input
+                    type="number"
+                    placeholder="Enter max price"
+                    value={filters.maxPrice}
+                    onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
+                  />
+                </div>
+                
+                <div>
+                  <Label>Min Rating</Label>
+                  <Select value={filters.minRating} onValueChange={(value) => setFilters(prev => ({ ...prev, minRating: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Any rating" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Any rating</SelectItem>
+                      <SelectItem value="1">1+ Stars</SelectItem>
+                      <SelectItem value="2">2+ Stars</SelectItem>
+                      <SelectItem value="3">3+ Stars</SelectItem>
+                      <SelectItem value="4">4+ Stars</SelectItem>
+                      <SelectItem value="5">5 Stars</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label>Sort By</Label>
+                  <Select value={filters.sortBy} onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="price">Price (Low to High)</SelectItem>
+                      <SelectItem value="rating">Rating (High to Low)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="mt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setFilters({ category: '', maxPrice: '', minRating: '', sortBy: 'price' })}
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Filter className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium mb-2">No hotels match your filters</h3>
+            <p className="text-muted-foreground">
+              Try adjusting your filter criteria to see more results.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-semibold mb-2">Find Your Perfect Stay</h2>
-        <p className="text-muted-foreground">Discover hotels in {destination.name} that match your preferences</p>
-      </div>
-
-      {/* Filters */}
+      {/* Search and Filter section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            Filters
+            <Hotel className="h-5 w-5" />
+            Hotel Search
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* Booking Form */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-              <Label htmlFor="category">Category</Label>
-              <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="budget">Budget</SelectItem>
-                  <SelectItem value="mid_range">Mid-Range</SelectItem>
-                  <SelectItem value="luxury">Luxury</SelectItem>
-                  <SelectItem value="special">Special</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="maxPrice">Max Price/Night ($)</Label>
+              <Label>Check-in</Label>
               <Input
-                id="maxPrice"
-                type="number"
-                placeholder="Any price"
-                value={filters.maxPrice}
-                onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
+                type="date"
+                value={bookingForm.checkIn}
+                onChange={(e) => setBookingForm(prev => ({ ...prev, checkIn: e.target.value }))}
               />
             </div>
             <div>
-              <Label htmlFor="minRating">Min Rating</Label>
-              <Select value={filters.minRating} onValueChange={(value) => setFilters(prev => ({ ...prev, minRating: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Any rating" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Any Rating</SelectItem>
-                  <SelectItem value="3">3+ Stars</SelectItem>
-                  <SelectItem value="4">4+ Stars</SelectItem>
-                  <SelectItem value="4.5">4.5+ Stars</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Check-out</Label>
+              <Input
+                type="date"
+                value={bookingForm.checkOut}
+                onChange={(e) => setBookingForm(prev => ({ ...prev, checkOut: e.target.value }))}
+              />
             </div>
             <div>
-              <Label htmlFor="sortBy">Sort By</Label>
-              <Select value={filters.sortBy} onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="price">Price (Low to High)</SelectItem>
-                  <SelectItem value="rating">Rating (High to Low)</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Adults</Label>
+              <Input
+                type="number"
+                min="1"
+                value={bookingForm.adults}
+                onChange={(e) => setBookingForm(prev => ({ ...prev, adults: parseInt(e.target.value) }))}
+              />
             </div>
-            <div className="flex items-end">
-              <Button variant="outline" onClick={() => setFilters({ category: 'all', maxPrice: '', minRating: '', sortBy: 'price' })}>
+            <div>
+              <Label>Children</Label>
+              <Input
+                type="number"
+                min="0"
+                value={bookingForm.children}
+                onChange={(e) => setBookingForm(prev => ({ ...prev, children: parseInt(e.target.value) }))}
+              />
+            </div>
+            <div>
+              <Label>Rooms</Label>
+              <Input
+                type="number"
+                min="1"
+                value={bookingForm.rooms}
+                onChange={(e) => setBookingForm(prev => ({ ...prev, rooms: parseInt(e.target.value) }))}
+              />
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="border-t pt-4">
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Filters
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <Label>Category</Label>
+                <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All categories</SelectItem>
+                    <SelectItem value="budget">Budget</SelectItem>
+                    <SelectItem value="mid_range">Mid Range</SelectItem>
+                    <SelectItem value="luxury">Luxury</SelectItem>
+                    <SelectItem value="special">Special/Boutique</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label>Max Price per Night</Label>
+                <Input
+                  type="number"
+                  placeholder="Enter max price"
+                  value={filters.maxPrice}
+                  onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
+                />
+              </div>
+              
+              <div>
+                <Label>Min Rating</Label>
+                <Select value={filters.minRating} onValueChange={(value) => setFilters(prev => ({ ...prev, minRating: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Any rating" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Any rating</SelectItem>
+                    <SelectItem value="1">1+ Stars</SelectItem>
+                    <SelectItem value="2">2+ Stars</SelectItem>
+                    <SelectItem value="3">3+ Stars</SelectItem>
+                    <SelectItem value="4">4+ Stars</SelectItem>
+                    <SelectItem value="5">5 Stars</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label>Sort By</Label>
+                <Select value={filters.sortBy} onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="price">Price (Low to High)</SelectItem>
+                    <SelectItem value="rating">Rating (High to Low)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setFilters({ category: '', maxPrice: '', minRating: '', sortBy: 'price' })}
+              >
                 Clear Filters
               </Button>
             </div>
@@ -317,88 +488,161 @@ const HotelSearch = ({ destination, groupType }: HotelSearchProps) => {
         </CardContent>
       </Card>
 
-      {filteredHotels.length === 0 && hotels.length === 0 && (
-        <div className="text-center py-12">
-          <Hotel className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">No hotels yet</h3>
-          <p className="text-muted-foreground mb-4">Add some sample hotels for {destination.name}</p>
-          <Button onClick={addSampleHotels}>
-            Add Sample Hotels
-          </Button>
-        </div>
-      )}
-
-      {filteredHotels.length === 0 && hotels.length > 0 && (
-        <div className="text-center py-12">
-          <Filter className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">No hotels match your filters</h3>
-          <p className="text-muted-foreground">Try adjusting your filter criteria</p>
-        </div>
-      )}
-
+      {/* Hotels grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredHotels.map((hotel) => (
-          <Card key={hotel.id} className="overflow-hidden hover:shadow-lg transition-all duration-200 hover:scale-105">
-            {hotel.images?.[0] && (
-              <div className="h-48 overflow-hidden">
+          <Card key={hotel.id} className="overflow-hidden">
+            <div className="relative">
+              {hotel.images && hotel.images.length > 0 ? (
                 <img 
                   src={hotel.images[0]} 
                   alt={hotel.name}
-                  className="w-full h-full object-cover transition-transform duration-200 hover:scale-110"
+                  className="w-full h-48 object-cover"
                 />
-              </div>
-            )}
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-lg mb-1">{hotel.name}</CardTitle>
-                  <Badge 
-                    variant="outline" 
-                    className={`mb-2 ${
-                      hotel.category === 'luxury' ? 'border-yellow-500 text-yellow-600' :
-                      hotel.category === 'budget' ? 'border-green-500 text-green-600' :
-                      hotel.category === 'special' ? 'border-purple-500 text-purple-600' :
-                      'border-blue-500 text-blue-600'
-                    }`}
-                  >
-                    {categoryLabels[hotel.category as keyof typeof categoryLabels]}
-                  </Badge>
-                  {renderStars(hotel.rating)}
-                  {hotel.address && (
-                    <CardDescription className="flex items-center gap-1 mt-1">
-                      <MapPin className="h-3 w-3" />
-                      {hotel.address}
-                    </CardDescription>
-                  )}
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-primary">${hotel.price_per_night}</div>
-                  <div className="text-sm text-muted-foreground">per night</div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {hotel.description && (
-                <p className="text-sm text-muted-foreground mb-3">{hotel.description}</p>
-              )}
-              {hotel.amenities && Array.isArray(hotel.amenities) && hotel.amenities.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {hotel.amenities.slice(0, 4).map((amenity: string) => (
-                    <Badge key={amenity} variant="secondary" className="text-xs">
-                      {amenity}
-                    </Badge>
-                  ))}
-                  {hotel.amenities.length > 4 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{hotel.amenities.length - 4} more
-                    </Badge>
-                  )}
+              ) : (
+                <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                  <Hotel className="h-12 w-12 text-gray-400" />
                 </div>
               )}
+              <Badge className="absolute top-2 right-2 bg-white text-black">
+                {hotel.category.replace('_', ' ')}
+              </Badge>
+            </div>
+            
+            <CardContent className="p-4">
+              <div className="space-y-2">
+                <div className="flex justify-between items-start">
+                  <h3 className="font-semibold text-lg">{hotel.name}</h3>
+                  <div className="flex items-center">
+                    {renderStars(hotel.rating || 0)}
+                    <span className="ml-1 text-sm text-gray-600">({hotel.rating || 0})</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center text-sm text-gray-600">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  {hotel.address}
+                </div>
+                
+                <div className="text-2xl font-bold text-green-600">
+                  ${hotel.price_per_night}
+                  <span className="text-sm font-normal text-gray-600">/{hotel.currency} per night</span>
+                </div>
+                
+                <p className="text-sm text-gray-700 line-clamp-2">
+                  {hotel.description}
+                </p>
+                
+                {hotel.amenities && hotel.amenities.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {hotel.amenities.slice(0, 4).map((amenity, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {amenity.includes('wifi') || amenity.includes('WiFi') ? (
+                          <Wifi className="h-3 w-3 mr-1" />
+                        ) : amenity.includes('parking') ? (
+                          <Car className="h-3 w-3 mr-1" />
+                        ) : amenity.includes('pool') ? (
+                          <Waves className="h-3 w-3 mr-1" />
+                        ) : amenity.includes('coffee') || amenity.includes('breakfast') ? (
+                          <Coffee className="h-3 w-3 mr-1" />
+                        ) : null}
+                        {amenity}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                
+                <Button 
+                  className="w-full mt-3" 
+                  onClick={() => handleBooking(hotel)}
+                >
+                  Book Now
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {/* Booking Dialog */}
+      <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Book {selectedHotel?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Check-in</Label>
+                <Input
+                  type="date"
+                  value={bookingForm.checkIn}
+                  onChange={(e) => setBookingForm(prev => ({ ...prev, checkIn: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Check-out</Label>
+                <Input
+                  type="date"
+                  value={bookingForm.checkOut}
+                  onChange={(e) => setBookingForm(prev => ({ ...prev, checkOut: e.target.value }))}
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Adults</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={bookingForm.adults}
+                  onChange={(e) => setBookingForm(prev => ({ ...prev, adults: parseInt(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <Label>Children</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={bookingForm.children}
+                  onChange={(e) => setBookingForm(prev => ({ ...prev, children: parseInt(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <Label>Rooms</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={bookingForm.rooms}
+                  onChange={(e) => setBookingForm(prev => ({ ...prev, rooms: parseInt(e.target.value) }))}
+                />
+              </div>
+            </div>
+
+            {selectedHotel && (
+              <div className="border-t pt-4">
+                <div className="flex justify-between">
+                  <span>Price per night:</span>
+                  <span>${selectedHotel.price_per_night}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Number of nights:</span>
+                  <span>{calculateNights()}</span>
+                </div>
+                <div className="flex justify-between font-semibold">
+                  <span>Total:</span>
+                  <span>${selectedHotel.price_per_night * calculateNights()}</span>
+                </div>
+              </div>
+            )}
+
+            <Button onClick={processBooking} className="w-full">
+              Confirm Booking
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
