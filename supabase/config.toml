@@ -1,1 +1,19 @@
 project_id = "zuocignqjaapotmzogkf"
+
+[functions.geoapify-search]
+verify_jwt = false
+
+[functions.geoapify-reverse]
+verify_jwt = false
+
+[functions.foursquare-search]
+verify_jwt = false
+
+[functions.stayapi-search]
+verify_jwt = false
+
+[functions.stayapi-booking]
+verify_jwt = false
+
+[functions.unsplash-search]
+verify_jwt = false
