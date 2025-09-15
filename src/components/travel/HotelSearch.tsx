@@ -274,12 +274,12 @@ const HotelSearch = ({ destination, groupType }: HotelSearchProps) => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <Label>Category</Label>
-                  <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
+                  <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value === 'all' ? '' : value }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="All categories" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All categories</SelectItem>
+                      <SelectItem value="all">All categories</SelectItem>
                       <SelectItem value="budget">Budget</SelectItem>
                       <SelectItem value="mid_range">Mid Range</SelectItem>
                       <SelectItem value="luxury">Luxury</SelectItem>
@@ -300,12 +300,12 @@ const HotelSearch = ({ destination, groupType }: HotelSearchProps) => {
                 
                 <div>
                   <Label>Min Rating</Label>
-                  <Select value={filters.minRating} onValueChange={(value) => setFilters(prev => ({ ...prev, minRating: value }))}>
+                  <Select value={filters.minRating} onValueChange={(value) => setFilters(prev => ({ ...prev, minRating: value === 'any' ? '' : value }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Any rating" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any rating</SelectItem>
+                      <SelectItem value="any">Any rating</SelectItem>
                       <SelectItem value="1">1+ Stars</SelectItem>
                       <SelectItem value="2">2+ Stars</SelectItem>
                       <SelectItem value="3">3+ Stars</SelectItem>
@@ -421,12 +421,12 @@ const HotelSearch = ({ destination, groupType }: HotelSearchProps) => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <Label>Category</Label>
-                <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
+                <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value === 'all' ? '' : value }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="All categories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All categories</SelectItem>
+                    <SelectItem value="all">All categories</SelectItem>
                     <SelectItem value="budget">Budget</SelectItem>
                     <SelectItem value="mid_range">Mid Range</SelectItem>
                     <SelectItem value="luxury">Luxury</SelectItem>
@@ -447,12 +447,12 @@ const HotelSearch = ({ destination, groupType }: HotelSearchProps) => {
               
               <div>
                 <Label>Min Rating</Label>
-                <Select value={filters.minRating} onValueChange={(value) => setFilters(prev => ({ ...prev, minRating: value }))}>
+                <Select value={filters.minRating} onValueChange={(value) => setFilters(prev => ({ ...prev, minRating: value === 'any' ? '' : value }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Any rating" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any rating</SelectItem>
+                    <SelectItem value="any">Any rating</SelectItem>
                     <SelectItem value="1">1+ Stars</SelectItem>
                     <SelectItem value="2">2+ Stars</SelectItem>
                     <SelectItem value="3">3+ Stars</SelectItem>
