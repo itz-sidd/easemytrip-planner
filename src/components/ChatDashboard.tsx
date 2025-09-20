@@ -3,25 +3,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Send, MessageCircle, Users, Calendar, MapPin, Plane, LogOut } from "lucide-react";
+import { Send, MessageCircle, Users, Calendar, MapPin, Plane, LogOut, Bot, User, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { aiTravelService } from "@/services/aiTravelService";
+import { useToast } from "@/hooks/use-toast";
+
+interface ChatMessage {
+  id: string;
+  type: 'user' | 'bot';
+  content: string;
+  timestamp: Date;
+}
 
 export function ChatDashboard() {
   const [message, setMessage] = useState("");
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { user, signOut, loading } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Redirect to auth if not logged in (after loading is complete)
-    if (!loading && !user) {
-      navigate("/auth");
-    }
-  }, [user, loading, navigate]);
-
-  const chatHistory: Array<{ type: "user" | "assistant"; content: string }> = [];
+  // Debug logging
+  console.log('ChatDashboard render - messages:', messages);
+  console.log('ChatDashboard render - hasStartedChat:', hasStartedChat);
 
   const tabs = [
     { id: "general", label: "General", icon: MessageCircle },
@@ -53,10 +60,99 @@ export function ChatDashboard() {
     }
   ];
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
+  const handleSendMessage = async () => {
+    console.log('ChatDashboard handleSendMessage called, message:', message);
+    console.log('message.trim():', message.trim());
+    console.log('isLoading:', isLoading);
+    
+    if (message.trim() && !isLoading) {
+      console.log('Conditions met, proceeding with message');
+      
+      const userMessage: ChatMessage = {
+        id: Date.now().toString(),
+        type: 'user',
+        content: message.trim(),
+        timestamp: new Date()
+      };
+
+      console.log('Created user message:', userMessage);
+      
+      setMessages(prev => {
+        console.log('Previous messages:', prev);
+        const newMessages = [...prev, userMessage];
+        console.log('New messages array:', newMessages);
+        return newMessages;
+      });
+      
       setHasStartedChat(true);
+      setIsLoading(true);
+      
+      const currentMessage = message.trim();
       setMessage("");
+      
+      console.log('About to process message:', currentMessage);
+
+      try {
+        // For simple messages like "hey", provide immediate response
+        if (currentMessage.toLowerCase().includes('hey') || 
+            currentMessage.toLowerCase().includes('hello') || 
+            currentMessage.toLowerCase().includes('hi')) {
+          
+          console.log('Detected greeting, providing direct response');
+          
+          const botMessage: ChatMessage = {
+            id: (Date.now() + 1).toString(),
+            type: 'bot',
+            content: "Hey there! 👋 I'm your AI assistant. I'm here to help you with travel planning, answer questions, and provide support. You can:\n\n• Ask about travel destinations and tips\n• Get help with trip planning\n• Ask general questions\n• Get support with bookings\n\nWhat can I help you with today?",
+            timestamp: new Date()
+          };
+
+          setMessages(prev => [...prev, botMessage]);
+          setIsLoading(false);
+          return;
+        }
+
+        // For other messages, try AI service
+        console.log('Calling AI service...');
+        const response = await aiTravelService.generatePersonalizedTravelGuide({
+          preferred_group_type: 'solo',
+          budget_range: { min: 1000, max: 5000 },
+          interests: ['conversation'],
+          user_message: currentMessage
+        });
+        
+        console.log('AI response received:', response);
+
+        const botMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'bot',
+          content: response.generatedGuide,
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, botMessage]);
+      } catch (error) {
+        console.error('Error getting AI response:', error);
+        toast({
+          title: "Error",
+          description: "Failed to get AI response. Please try again.",
+          variant: "destructive",
+        });
+
+        const errorMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'bot',
+          content: "I'm sorry, I'm having trouble responding right now. Please try again later or try asking a different question.",
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, errorMessage]);
+      } finally {
+        console.log('Finally block, setting isLoading to false');
+        setIsLoading(false);
+      }
+    } else {
+      console.log('Conditions not met - message empty or loading');
     }
   };
 
@@ -153,22 +249,49 @@ export function ChatDashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              {chatHistory.map((msg, index) => (
+              {messages.map((msg) => (
                 <div
-                  key={index}
-                  className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}
+                  key={msg.id}
+                  className={`flex gap-3 ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div
-                    className={`max-w-[80%] p-4 rounded-lg ${
-                      msg.type === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-chat-sidebar text-chat-text border border-chat-border"
-                    }`}
-                  >
-                    {msg.content}
+                  <div className={`flex gap-3 max-w-[80%] ${msg.type === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      msg.type === 'user' 
+                        ? 'bg-primary text-white' 
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {msg.type === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                    </div>
+                    <div className={`rounded-lg p-3 ${
+                      msg.type === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-chat-sidebar text-chat-text border border-chat-border'
+                    }`}>
+                      <div className="whitespace-pre-wrap text-sm">
+                        {msg.content}
+                      </div>
+                      <div className="text-xs mt-1 opacity-70">
+                        {msg.timestamp.toLocaleTimeString()}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
+              {isLoading && (
+                <div className="flex gap-3 justify-start">
+                  <div className="flex gap-3 max-w-[80%]">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-muted text-muted-foreground">
+                      <Bot className="h-4 w-4" />
+                    </div>
+                    <div className="rounded-lg p-3 bg-chat-sidebar text-chat-text border border-chat-border">
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm">Thinking...</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -201,10 +324,14 @@ export function ChatDashboard() {
                   />
                   <Button
                     onClick={handleSendMessage}
-                    disabled={!message.trim()}
+                    disabled={!message.trim() || isLoading}
                     className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
-                    <Send className="h-4 w-4" />
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </TabsContent>
