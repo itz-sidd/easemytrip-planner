@@ -266,52 +266,70 @@ serve(async (req) => {
       const prompt = createTravelGuidePrompt(preferences);
       console.log('Generated prompt for Gemini');
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${geminiApiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Helper to call a specific Gemini model with consistent settings
+      const callGemini = async (model: string, maxTokens: number) => {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+        const body = {
           contents: [{
-            parts: [{
-              text: prompt
-            }]
+            parts: [{ text: prompt }]
           }],
           generationConfig: {
             temperature: 0.4,
             topK: 32,
             topP: 0.9,
-            maxOutputTokens: 4096,
-            candidateCount: 1
+            maxOutputTokens: maxTokens,
+            candidateCount: 1,
           },
           safetySettings: [
-            {
-              category: "HARM_CATEGORY_HARASSMENT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_HATE_SPEECH", 
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            }
-          ]
-        }),
-      });
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+          ],
+        };
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('Gemini API error:', response.status, errorData);
-        throw new Error(`Gemini API error: ${response.status}`);
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        const text = await response.text();
+        if (!response.ok) {
+          return { ok: false as const, status: response.status, body: text };
+        }
+
+        try {
+          const data = JSON.parse(text);
+          return { ok: true as const, data };
+        } catch (e) {
+          return { ok: false as const, status: 500, body: text };
+        }
+      };
+
+      // Try Pro first, then gracefully fall back to Flash if we hit quota
+      let usedModel = 'gemini-1.5-pro-latest';
+      let result = await callGemini(usedModel, 3072);
+
+      if (!result.ok && (result.status === 429 || (typeof result.body === 'string' && result.body.includes('RESOURCE_EXHAUSTED')))) {
+        console.warn('Gemini quota hit on Pro model. Falling back to Flash.');
+        usedModel = 'gemini-1.5-flash-latest';
+        result = await callGemini(usedModel, 2048);
       }
 
-      const data = await response.json();
+      if (!result.ok) {
+        console.error('Gemini API error:', result.status, result.body);
+        const message = result.status === 429
+          ? 'Gemini API quota exceeded. Please add billing to your Gemini project or retry later.'
+          : `Gemini API error: ${result.status}`;
+
+        return new Response(JSON.stringify({ error: message, code: result.status }), {
+          status: result.status || 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const data = result.data;
       console.log('Gemini response received');
 
       if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
@@ -319,15 +337,16 @@ serve(async (req) => {
         throw new Error('Invalid response from Gemini API');
       }
 
-      const generatedGuide = data.candidates[0].content.parts[0].text;
-      
+      const parts = data.candidates[0].content.parts || [];
+      const generatedGuide = parts[0]?.text ?? parts.map((p: any) => p?.text).filter(Boolean).join('\n');
+
       // Generate a title based on preferences
       const title = `Travel Guide for ${preferences.preferred_group_type || 'Traveler'} - Budget $${preferences.budget_range?.min || 0}-${preferences.budget_range?.max || 10000}`;
 
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         generatedGuide,
         title,
-        model: 'gemini-1.5-flash-latest'
+        model: usedModel,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
