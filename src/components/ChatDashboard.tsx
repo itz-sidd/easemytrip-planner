@@ -38,22 +38,22 @@ export function ChatDashboard() {
 
   const featureCards = [
     {
-      title: "AI Travel Planning",
-      description: "Get personalized travel recommendations and itineraries",
+      title: "EaseMyTrip Flight Booking",
+      description: "Book domestic & international flights with zero convenience fees",
       icon: MapPin,
-      action: "Open Travel Planner",
+      action: "Book Flights",
       onClick: () => navigate("/travel")
     },
     {
-      title: "Quick Questions",
-      description: "Ask me anything about destinations, weather, or travel tips",
+      title: "Hotels & Holidays",
+      description: "Find hotels with best price guarantee and holiday packages",
       icon: MessageCircle,
-      action: "Start Chatting",
+      action: "Start Planning",
       onClick: () => setHasStartedChat(true)
     },
     {
-      title: "Trip Assistance",
-      description: "Get help with booking, itineraries, and travel logistics",
+      title: "Trains, Bus & Cabs",
+      description: "Book IRCTC trains, bus tickets, and cab services across India",
       icon: Calendar,
       action: "Get Help",
       onClick: () => setHasStartedChat(true)
@@ -101,7 +101,7 @@ export function ChatDashboard() {
           const botMessage: ChatMessage = {
             id: (Date.now() + 1).toString(),
             type: 'bot',
-            content: "Hey there! 👋 I'm your AI assistant. I'm here to help you with travel planning, answer questions, and provide support. You can:\n\n• Ask about travel destinations and tips\n• Get help with trip planning\n• Ask general questions\n• Get support with bookings\n\nWhat can I help you with today?",
+            content: "Hey there! 👋 I'm your EaseMyTrip AI assistant! I'm here to help you with all EaseMyTrip services including:\n\n• Flight bookings with ZERO convenience fees\n• Hotel bookings with best price guarantee\n• Train tickets (IRCTC authorized)\n• Bus bookings across India\n• Holiday packages and tours\n• Corporate travel solutions (EMT Desk)\n• 24/7 support and assistance\n\nWhat can I help you book or plan today?",
             timestamp: new Date()
           };
           setMessages(prev => [...prev, botMessage]);
@@ -180,7 +180,7 @@ export function ChatDashboard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <MessageCircle className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-semibold text-chat-text">AI Assistant</h1>
+              <h1 className="text-xl font-semibold text-chat-text">EaseMyTrip AI Assistant</h1>
               <span className="text-sm text-chat-secondary">Welcome, {user.email}</span>
             </div>
             <div className="flex items-center gap-3">
@@ -213,11 +213,12 @@ export function ChatDashboard() {
             <div className="text-center space-y-8 py-12">
               <div className="space-y-4">
                 <h2 className="text-3xl font-bold text-chat-text">
-                  How can I help you today?
+                  Welcome to EaseMyTrip AI Assistant!
                 </h2>
                 <p className="text-lg text-chat-secondary max-w-2xl mx-auto">
-                  I'm your AI assistant, ready to help with questions, travel planning, and more. 
-                  Choose a category below or start typing your question.
+                  I'm your EaseMyTrip AI assistant, specialized in helping you with flights, hotels, trains, 
+                  buses, holidays, and all your travel needs. I have complete knowledge of EaseMyTrip's 
+                  services, features, and can help you plan the perfect trip with zero convenience fees!
                 </p>
               </div>
 
