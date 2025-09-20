@@ -8,6 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { Settings, DollarSign, Heart, Utensils } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { aiTravelService, TravelPreferences } from "@/services/aiTravelService";
+import { AITravelGuideDialog } from "./AITravelGuideDialog";
 
 interface UserPreference {
   id: string;
@@ -35,6 +37,13 @@ const UserPreferences = () => {
     dietary_restrictions: [] as string[],
     accessibility_needs: [] as string[]
   });
+
+  // AI Travel Guide state
+  const [showGuideDialog, setShowGuideDialog] = useState(false);
+  const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
+  const [generatedGuide, setGeneratedGuide] = useState<string | null>(null);
+  const [guideTitle, setGuideTitle] = useState('');
+  const [guideModel, setGuideModel] = useState('');
 
   const transportOptions = [
     'flights', 'railways', 'buses', 'car_rental'
@@ -148,7 +157,17 @@ const UserPreferences = () => {
 
       toast({
         title: "Success",
-        description: "Preferences saved successfully"
+        description: "Preferences saved successfully",
+        action: (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleGenerateGuide}
+            className="ml-2"
+          >
+            Generate Travel Guide
+          </Button>
+        ),
       });
 
       fetchUserPreferences();
@@ -174,6 +193,41 @@ const UserPreferences = () => {
         ? prev[field].filter(item => item !== value)
         : [...prev[field], value]
     }));
+  };
+
+  const handleGenerateGuide = async () => {
+    setIsGeneratingGuide(true);
+    setShowGuideDialog(true);
+    
+    try {
+      const preferences: TravelPreferences = {
+        preferred_group_type: formData.preferred_group_type,
+        budget_range: {
+          min: parseFloat(formData.budget_min) || 0,
+          max: parseFloat(formData.budget_max) || 10000
+        },
+        preferred_hotel_category: formData.preferred_hotel_category,
+        transport_preferences: formData.transport_preferences,
+        interests: formData.interests,
+        dietary_restrictions: formData.dietary_restrictions,
+        accessibility_needs: formData.accessibility_needs
+      };
+
+      const result = await aiTravelService.generatePersonalizedTravelGuide(preferences);
+      setGeneratedGuide(result.generatedGuide);
+      setGuideTitle(result.title);
+      setGuideModel(result.model);
+    } catch (error: any) {
+      console.error('Error generating travel guide:', error);
+      toast({
+        title: "Error generating guide",
+        description: error.message || "Failed to generate travel guide. Please try again.",
+        variant: "destructive",
+      });
+      setShowGuideDialog(false);
+    } finally {
+      setIsGeneratingGuide(false);
+    }
   };
 
   if (loading) {
@@ -389,6 +443,16 @@ const UserPreferences = () => {
           {saving ? 'Saving...' : 'Save Preferences'}
         </Button>
       </div>
+
+      <AITravelGuideDialog
+        open={showGuideDialog}
+        onOpenChange={setShowGuideDialog}
+        guide={generatedGuide}
+        title={guideTitle}
+        model={guideModel}
+        preferences={formData}
+        isGenerating={isGeneratingGuide}
+      />
     </div>
   );
 };

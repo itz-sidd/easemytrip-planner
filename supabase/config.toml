@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.unsplash-search]
 verify_jwt = false
+
+[functions.ai-travel-chat]
+verify_jwt = false
