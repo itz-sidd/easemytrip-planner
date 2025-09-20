@@ -16,9 +16,38 @@ interface TravelPreferences {
   interests?: string[];
   dietary_restrictions?: string[];
   accessibility_needs?: string[];
+  user_message?: string; // Add this for conversational messages
 }
 
 function createTravelGuidePrompt(preferences: TravelPreferences): string {
+  // If there's a user message, create a conversational response
+  if (preferences.user_message) {
+    const userMessage = preferences.user_message.toLowerCase();
+    
+    // Handle greetings
+    if (userMessage.includes('hey') || userMessage.includes('hello') || userMessage.includes('hi')) {
+      return `You are a friendly AI travel assistant. The user just greeted you with: "${preferences.user_message}"
+
+Please respond in a warm, welcoming way and introduce yourself as their AI travel assistant. Mention that you can help with:
+- Trip planning and destination recommendations
+- Flight and hotel bookings
+- Budget planning and cost-saving tips
+- Creating detailed itineraries
+- Travel tips and local insights
+- Group travel coordination
+
+Keep your response conversational, friendly, and under 200 words. End by asking what they'd like help with today.`;
+    }
+    
+    // Handle general travel questions
+    return `You are an expert AI travel assistant. A user has asked: "${preferences.user_message}"
+
+Please provide a helpful, informative response about travel. Be conversational and friendly. If the question is about specific travel planning, offer to help create a detailed travel guide if they share their preferences.
+
+Keep your response engaging and under 300 words.`;
+  }
+
+  // Original travel guide prompt for detailed planning
   return `You are an expert travel advisor. Generate a comprehensive, personalized travel guide based on the user's preferences. 
 
 User Preferences:

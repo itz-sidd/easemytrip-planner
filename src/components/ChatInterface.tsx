@@ -101,13 +101,20 @@ export const ChatInterface = () => {
       setMessage("");
 
       try {
-        // For now, we'll generate a simple travel guide response
-        // You can extend this to handle different types of queries
-        const response = await aiTravelService.generatePersonalizedTravelGuide({
-          interests: [currentMessage.toLowerCase().includes('adventure') ? 'adventure' : 'general'],
+        console.log('Sending message to AI:', currentMessage);
+        
+        // Create a simple conversational prompt for the AI
+        const conversationalPrompt = {
+          preferred_group_type: 'solo',
           budget_range: { min: 1000, max: 5000 },
-          preferred_group_type: 'solo'
-        });
+          interests: ['conversation'],
+          user_message: currentMessage
+        };
+
+        // Call the AI service with a more general approach
+        const response = await aiTravelService.generatePersonalizedTravelGuide(conversationalPrompt);
+        
+        console.log('AI response received:', response);
 
         const botMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
@@ -125,10 +132,17 @@ export const ChatInterface = () => {
           variant: "destructive",
         });
 
+        // Provide a fallback response for simple greetings
+        let fallbackResponse = "Hello! I'm your AI travel assistant. I can help you plan trips, find destinations, book hotels, and much more. What would you like to know about travel?";
+        
+        if (currentMessage.toLowerCase().includes('hey') || currentMessage.toLowerCase().includes('hello') || currentMessage.toLowerCase().includes('hi')) {
+          fallbackResponse = "Hey there! 👋 I'm your AI travel assistant. I'm here to help you plan amazing trips! You can ask me about:\n\n• Destination recommendations\n• Hotel and flight bookings\n• Budget planning\n• Itinerary creation\n• Travel tips and advice\n\nWhat can I help you with today?";
+        }
+
         const errorMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           type: 'bot',
-          content: "I'm sorry, I'm having trouble responding right now. Please try again later.",
+          content: fallbackResponse,
           timestamp: new Date()
         };
 

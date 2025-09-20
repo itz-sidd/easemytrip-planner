@@ -8,6 +8,7 @@ export interface TravelPreferences {
   interests?: string[];
   dietary_restrictions?: string[];
   accessibility_needs?: string[];
+  user_message?: string; // Add this for conversational messages
 }
 
 export interface TravelGuide {
