@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Send,
   Image,
@@ -12,13 +13,28 @@ import {
   DollarSign,
   Plane,
   Hotel,
-  Users
+  Users,
+  Bot,
+  User,
+  Loader2
 } from "lucide-react";
+import { aiTravelService } from "@/services/aiTravelService";
+import { useToast } from "@/hooks/use-toast";
+
+interface ChatMessage {
+  id: string;
+  type: 'user' | 'bot';
+  content: string;
+  timestamp: Date;
+}
 
 export const ChatInterface = () => {
   const [message, setMessage] = useState("");
   const [activeTab, setActiveTab] = useState("All");
   const [hasStartedChat, setHasStartedChat] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const chatHistory = [
     { title: "Plan a 3-day trip", subtitle: "A 3-day trip to see the northern lights in Norway..." },
@@ -68,11 +84,58 @@ export const ChatInterface = () => {
     }
   ];
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
+  const handleSendMessage = async () => {
+    if (message.trim() && !isLoading) {
+      const userMessage: ChatMessage = {
+        id: Date.now().toString(),
+        type: 'user',
+        content: message.trim(),
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, userMessage]);
       setHasStartedChat(true);
-      console.log('Send message:', message);
+      setIsLoading(true);
+      
+      const currentMessage = message.trim();
       setMessage("");
+
+      try {
+        // For now, we'll generate a simple travel guide response
+        // You can extend this to handle different types of queries
+        const response = await aiTravelService.generatePersonalizedTravelGuide({
+          interests: [currentMessage.toLowerCase().includes('adventure') ? 'adventure' : 'general'],
+          budget_range: { min: 1000, max: 5000 },
+          preferred_group_type: 'solo'
+        });
+
+        const botMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'bot',
+          content: response.generatedGuide,
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, botMessage]);
+      } catch (error) {
+        console.error('Error getting AI response:', error);
+        toast({
+          title: "Error",
+          description: "Failed to get AI response. Please try again.",
+          variant: "destructive",
+        });
+
+        const errorMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'bot',
+          content: "I'm sorry, I'm having trouble responding right now. Please try again later.",
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, errorMessage]);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -129,12 +192,53 @@ export const ChatInterface = () => {
           )}
           
           {hasStartedChat && (
-            <div className="w-full max-w-4xl">
-              {/* Chat messages would go here */}
-              <div className="text-center text-chat-text-muted">
-                Chat conversation will appear here...
+            <ScrollArea className="w-full max-w-4xl h-full px-4">
+              <div className="space-y-4 pb-4">
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex gap-3 ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`flex gap-3 max-w-[80%] ${msg.type === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        msg.type === 'user' 
+                          ? 'bg-primary text-white' 
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {msg.type === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                      </div>
+                      <div className={`rounded-lg p-3 ${
+                        msg.type === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                        <div className="whitespace-pre-wrap text-sm">
+                          {msg.content}
+                        </div>
+                        <div className="text-xs mt-1 opacity-70">
+                          {msg.timestamp.toLocaleTimeString()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="flex gap-3 max-w-[80%]">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-muted text-muted-foreground">
+                        <Bot className="h-4 w-4" />
+                      </div>
+                      <div className="rounded-lg p-3 bg-muted text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span className="text-sm">Thinking...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
+            </ScrollArea>
           )}
         </div>
 
@@ -173,10 +277,14 @@ export const ChatInterface = () => {
             <Button 
               size="icon"
               className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary-light transition-all duration-200 hover:scale-110"
-              disabled={!message.trim()}
+              disabled={!message.trim() || isLoading}
               onClick={handleSendMessage}
             >
-              <Send className="h-4 w-4" />
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
 
