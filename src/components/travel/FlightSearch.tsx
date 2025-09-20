@@ -223,6 +223,35 @@ const FlightSearch = ({ destination, groupType }: FlightSearchProps) => {
           </Button>
         </CardContent>
       </Card>
+
+      {/* EaseMyTrip Fallback Section */}
+      <Card className="border-blue-200 bg-blue-50/50">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-2 rounded-full bg-blue-100">
+              <Plane className="h-5 w-5 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-blue-900 mb-2">
+                Having trouble with flight booking APIs?
+              </h3>
+              <p className="text-blue-700 text-sm mb-4">
+                If our booking APIs don't work or take too long to respond, you can directly book flights on EaseMyTrip for competitive prices and excellent service.
+              </p>
+              <Button 
+                onClick={() => {
+                  const url = `https://www.easemytrip.com/flights/search?from=${encodeURIComponent(searchForm.from)}&to=${encodeURIComponent(searchForm.to)}&depart=${searchForm.departDate}&return=${searchForm.returnDate}&adults=${searchForm.passengers}&class=${searchForm.class}&trip=${searchForm.tripType}`;
+                  window.open(url, '_blank');
+                }}
+                variant="outline"
+                className="border-blue-300 text-blue-700 hover:bg-blue-100"
+              >
+                Book Flights on EaseMyTrip
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -693,6 +693,35 @@ const HotelSearch = ({ destination, groupType }: HotelSearchProps) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* EaseMyTrip Fallback Section */}
+      <Card className="border-orange-200 bg-orange-50/50">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-2 rounded-full bg-orange-100">
+              <Hotel className="h-5 w-5 text-orange-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-orange-900 mb-2">
+                Having trouble with hotel booking APIs?
+              </h3>
+              <p className="text-orange-700 text-sm mb-4">
+                If our booking APIs don't work or take too long to respond, you can directly book hotels on EaseMyTrip for the best deals and reliable service.
+              </p>
+              <Button 
+                onClick={() => {
+                  const url = `https://www.easemytrip.com/hotels/search?destination=${encodeURIComponent(destination)}&checkin=${bookingForm.checkIn}&checkout=${bookingForm.checkOut}&adults=${bookingForm.adults}&children=${bookingForm.children}&rooms=${bookingForm.rooms}`;
+                  window.open(url, '_blank');
+                }}
+                variant="outline"
+                className="border-orange-300 text-orange-700 hover:bg-orange-100"
+              >
+                Book Hotels on EaseMyTrip
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
