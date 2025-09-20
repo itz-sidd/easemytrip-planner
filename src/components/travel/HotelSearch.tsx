@@ -68,13 +68,37 @@ const HotelSearch = ({ destination, groupType }: HotelSearchProps) => {
         minRating: filters.minRating ? parseFloat(filters.minRating) : undefined,
       };
 
-      const hotelResults = await stayApiService.searchHotels(searchParams);
-      setHotels(hotelResults);
+      // Set timeout for API call
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('timeout')), 15000)
+      );
+
+      const searchPromise = stayApiService.searchHotels(searchParams);
+      
+      const hotelResults = await Promise.race([searchPromise, timeoutPromise]);
+      setHotels(hotelResults as any);
     } catch (error) {
       console.error('Error fetching hotels:', error);
-      toast.error("Failed to load hotels", {
-        description: "Please check your search parameters and try again",
-      });
+      
+      if (error instanceof Error && error.message === 'timeout') {
+        toast.error("API timeout - redirecting to EaseMyTrip", {
+          description: "Hotel booking API is not responding. Redirecting you to EaseMyTrip for hotel booking.",
+        });
+        
+        // Redirect to EaseMyTrip hotels
+        setTimeout(() => {
+          window.open(`https://www.easemytrip.com/hotels/search?destination=${encodeURIComponent(destination)}&checkin=${bookingForm.checkIn}&checkout=${bookingForm.checkOut}&adults=${bookingForm.adults}&children=${bookingForm.children}&rooms=${bookingForm.rooms}`, '_blank');
+        }, 2000);
+      } else {
+        toast.error("Failed to load hotels - redirecting to EaseMyTrip", {
+          description: "Hotel booking API is not working. Redirecting you to EaseMyTrip for hotel booking.",
+        });
+        
+        // Redirect to EaseMyTrip hotels  
+        setTimeout(() => {
+          window.open(`https://www.easemytrip.com/hotels/search?destination=${encodeURIComponent(destination)}&checkin=${bookingForm.checkIn}&checkout=${bookingForm.checkOut}&adults=${bookingForm.adults}&children=${bookingForm.children}&rooms=${bookingForm.rooms}`, '_blank');
+        }, 2000);
+      }
     } finally {
       setLoading(false);
     }
@@ -130,18 +154,44 @@ const HotelSearch = ({ destination, groupType }: HotelSearchProps) => {
         currency: selectedHotel.currency,
       };
 
-      const result = await stayApiService.bookHotel(bookingDetails);
+      // Set timeout for booking API call
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('timeout')), 15000)
+      );
+
+      const bookingPromise = stayApiService.bookHotel(bookingDetails);
+      
+      const result = await Promise.race([bookingPromise, timeoutPromise]);
       
       toast.success("Hotel booked successfully!", {
-        description: `Confirmation: ${result.confirmationNumber}`,
+        description: `Confirmation: ${(result as any).confirmationNumber}`,
       });
       
       setIsBookingOpen(false);
     } catch (error) {
       console.error('Booking error:', error);
-      toast.error("Booking failed", {
-        description: "Please try again or contact support",
-      });
+      
+      if (error instanceof Error && error.message === 'timeout') {
+        toast.error("Booking API timeout - redirecting to EaseMyTrip", {
+          description: "Hotel booking API is not responding. Redirecting you to EaseMyTrip to complete booking.",
+        });
+        
+        // Redirect to EaseMyTrip hotels with booking details
+        setTimeout(() => {
+          window.open(`https://www.easemytrip.com/hotels/search?destination=${encodeURIComponent(destination)}&checkin=${bookingForm.checkIn}&checkout=${bookingForm.checkOut}&adults=${bookingForm.adults}&children=${bookingForm.children}&rooms=${bookingForm.rooms}`, '_blank');
+        }, 2000);
+      } else {
+        toast.error("Booking failed - redirecting to EaseMyTrip", {
+          description: "Hotel booking API is not working. Redirecting you to EaseMyTrip to complete booking.",
+        });
+        
+        // Redirect to EaseMyTrip hotels with booking details
+        setTimeout(() => {
+          window.open(`https://www.easemytrip.com/hotels/search?destination=${encodeURIComponent(destination)}&checkin=${bookingForm.checkIn}&checkout=${bookingForm.checkOut}&adults=${bookingForm.adults}&children=${bookingForm.children}&rooms=${bookingForm.rooms}`, '_blank');
+        }, 2000);
+      }
+      
+      setIsBookingOpen(false);
     }
   };
 

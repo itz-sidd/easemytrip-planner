@@ -206,12 +206,12 @@ const ConsolidatedTravelPlanner = () => {
   };
 
   const openEaseMyTripFlights = () => {
-    const url = `https://www.easemytrip.com/hotels/search?checkin=${formData.departure_date}&checkout=${formData.return_date}&city=${encodeURIComponent(searchLocation)}&rooms=1&adults=${formData.travelers}`;
+    const url = `https://www.easemytrip.com/flights/search?from=DEL&to=${encodeURIComponent(searchLocation)}&depart=${formData.departure_date}&return=${formData.return_date}&adults=${formData.travelers}&class=Economy`;
     window.open(url, '_blank');
   };
 
   const openEaseMyTripHotels = () => {
-    const url = `https://www.easemytrip.com/flights/search?from=DEL&to=BOM&depart=${formData.departure_date}&return=${formData.return_date}&adults=${formData.travelers}&class=Economy`;
+    const url = `https://www.easemytrip.com/hotels/search?checkin=${formData.departure_date}&checkout=${formData.return_date}&city=${encodeURIComponent(searchLocation)}&rooms=1&adults=${formData.travelers}`;
     window.open(url, '_blank');
   };
 
