@@ -36,6 +36,10 @@ export const ChatInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  // Debug: Log messages state changes
+  console.log('ChatInterface render - messages:', messages);
+  console.log('ChatInterface render - hasStartedChat:', hasStartedChat);
+
   const chatHistory = [
     { title: "Plan a 3-day trip", subtitle: "A 3-day trip to see the northern lights in Norway..." },
     { title: "Ideas for a customer loyalty program", subtitle: "Here are seven ideas for a customer loyalty..." },
@@ -85,7 +89,13 @@ export const ChatInterface = () => {
   ];
 
   const handleSendMessage = async () => {
+    console.log('handleSendMessage called, message:', message);
+    console.log('message.trim():', message.trim());
+    console.log('isLoading:', isLoading);
+    
     if (message.trim() && !isLoading) {
+      console.log('Conditions met, proceeding with message');
+      
       const userMessage: ChatMessage = {
         id: Date.now().toString(),
         type: 'user',
@@ -93,17 +103,46 @@ export const ChatInterface = () => {
         timestamp: new Date()
       };
 
-      setMessages(prev => [...prev, userMessage]);
+      console.log('Created user message:', userMessage);
+      
+      setMessages(prev => {
+        console.log('Previous messages:', prev);
+        const newMessages = [...prev, userMessage];
+        console.log('New messages array:', newMessages);
+        return newMessages;
+      });
+      
       setHasStartedChat(true);
       setIsLoading(true);
       
       const currentMessage = message.trim();
       setMessage("");
+      
+      console.log('About to call AI service with message:', currentMessage);
 
       try {
         console.log('Sending message to AI:', currentMessage);
         
-        // Create a simple conversational prompt for the AI
+        // For simple messages like "hey", provide immediate response without AI call
+        if (currentMessage.toLowerCase().includes('hey') || 
+            currentMessage.toLowerCase().includes('hello') || 
+            currentMessage.toLowerCase().includes('hi')) {
+          
+          console.log('Detected greeting, providing direct response');
+          
+          const botMessage: ChatMessage = {
+            id: (Date.now() + 1).toString(),
+            type: 'bot',
+            content: "Hey there! 👋 I'm your AI travel assistant. I'm here to help you plan amazing trips! You can ask me about:\n\n• Destination recommendations\n• Hotel and flight bookings\n• Budget planning\n• Itinerary creation\n• Travel tips and advice\n\nWhat can I help you with today?",
+            timestamp: new Date()
+          };
+
+          setMessages(prev => [...prev, botMessage]);
+          setIsLoading(false);
+          return;
+        }
+        
+        // For other messages, try AI service
         const conversationalPrompt = {
           preferred_group_type: 'solo',
           budget_range: { min: 1000, max: 5000 },
@@ -148,8 +187,11 @@ export const ChatInterface = () => {
 
         setMessages(prev => [...prev, errorMessage]);
       } finally {
+        console.log('Finally block, setting isLoading to false');
         setIsLoading(false);
       }
+    } else {
+      console.log('Conditions not met - message empty or loading');
     }
   };
 
