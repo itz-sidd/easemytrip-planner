@@ -415,6 +415,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_travel_guides: {
+        Row: {
+          created_at: string
+          generated_guide: string
+          id: string
+          model_used: string
+          preferences_snapshot: Json
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          generated_guide: string
+          id?: string
+          model_used?: string
+          preferences_snapshot?: Json
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          generated_guide?: string
+          id?: string
+          model_used?: string
+          preferences_snapshot?: Json
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
