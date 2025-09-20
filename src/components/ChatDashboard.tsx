@@ -93,20 +93,17 @@ export function ChatDashboard() {
       console.log('About to process message:', currentMessage);
 
       try {
-        // For simple messages like "hey", provide immediate response
-        if (currentMessage.toLowerCase().includes('hey') || 
-            currentMessage.toLowerCase().includes('hello') || 
-            currentMessage.toLowerCase().includes('hi')) {
-          
+        // For simple greetings like "hi/hello/hey", provide immediate response
+        const isGreeting = /\b(hi|hello|hey)\b/i.test(currentMessage.trim());
+        const isShort = currentMessage.trim().split(/\s+/).length <= 4; // avoid matching words like "delhi"
+        if (isGreeting && isShort) {
           console.log('Detected greeting, providing direct response');
-          
           const botMessage: ChatMessage = {
             id: (Date.now() + 1).toString(),
             type: 'bot',
             content: "Hey there! 👋 I'm your AI assistant. I'm here to help you with travel planning, answer questions, and provide support. You can:\n\n• Ask about travel destinations and tips\n• Get help with trip planning\n• Ask general questions\n• Get support with bookings\n\nWhat can I help you with today?",
             timestamp: new Date()
           };
-
           setMessages(prev => [...prev, botMessage]);
           setIsLoading(false);
           return;

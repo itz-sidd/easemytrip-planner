@@ -124,19 +124,16 @@ export const ChatInterface = () => {
         console.log('Sending message to AI:', currentMessage);
         
         // For simple messages like "hey", provide immediate response without AI call
-        if (currentMessage.toLowerCase().includes('hey') || 
-            currentMessage.toLowerCase().includes('hello') || 
-            currentMessage.toLowerCase().includes('hi')) {
-          
+        const isGreeting = /\b(hi|hello|hey)\b/i.test(currentMessage.trim());
+        const isShort = currentMessage.trim().split(/\s+/).length <= 4;
+        if (isGreeting && isShort) {
           console.log('Detected greeting, providing direct response');
-          
           const botMessage: ChatMessage = {
             id: (Date.now() + 1).toString(),
             type: 'bot',
             content: "Hey there! 👋 I'm your AI travel assistant. I'm here to help you plan amazing trips! You can ask me about:\n\n• Destination recommendations\n• Hotel and flight bookings\n• Budget planning\n• Itinerary creation\n• Travel tips and advice\n\nWhat can I help you with today?",
             timestamp: new Date()
           };
-
           setMessages(prev => [...prev, botMessage]);
           setIsLoading(false);
           return;
@@ -173,8 +170,9 @@ export const ChatInterface = () => {
 
         // Provide a fallback response for simple greetings
         let fallbackResponse = "Hello! I'm your AI travel assistant. I can help you plan trips, find destinations, book hotels, and much more. What would you like to know about travel?";
-        
-        if (currentMessage.toLowerCase().includes('hey') || currentMessage.toLowerCase().includes('hello') || currentMessage.toLowerCase().includes('hi')) {
+        const isGreeting = /\b(hi|hello|hey)\b/i.test(currentMessage.trim());
+        const isShort = currentMessage.trim().split(/\s+/).length <= 4;
+        if (isGreeting && isShort) {
           fallbackResponse = "Hey there! 👋 I'm your AI travel assistant. I'm here to help you plan amazing trips! You can ask me about:\n\n• Destination recommendations\n• Hotel and flight bookings\n• Budget planning\n• Itinerary creation\n• Travel tips and advice\n\nWhat can I help you with today?";
         }
 
